@@ -1,6 +1,10 @@
 #+TITLE: Experiments and Causality 
 #+OPTIONS: toc:nil 
 
+Include a link: http://beta.mybinder.org/v2/gh/binder-examples/r/master?filepath=index.ipynb
+
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/d-alex-hughes/241_revisions/master?filepath=week_02%2Fnotebook_2.5.ipynb)]
+
 * Introduction
 This course introduces students to experimentation in the social sciences.  This topic has increased considerably in importance since 1995, as researchers have learned to think creatively about how to generate data in more scientific ways, and developments in information technology has facilitated the development of better data gathering.  Key to this area of inquiry is the insight that correlation does not necessarily imply causality.  In this course, we learn how to use experiments to establish causal effects, and how to be appropriately skeptical of findings from observational data.
 
