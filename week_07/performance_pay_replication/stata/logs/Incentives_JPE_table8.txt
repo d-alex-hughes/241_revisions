@@ -1,0 +1,1012 @@
+------------------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  c:\JPE\stata\\logs\\Incentives_JPE_table8.txt
+  log type:  text
+ opened on:   8 Feb 2011, 16:40:15
+
+. **description : table 7 of the JPE Incentives paper;
+. **teacher absence and activity;
+. use data\dta\teacher_short_y1_y2.dta, clear;
+
+. label define absence 0 "Present" 1 "Absent";
+
+.                 tab teacher_activity, gen(tact_);
+
+teacher_act |
+      ivity |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          1 |      3,243       42.35       42.35
+          2 |      1,195       15.61       57.96
+          3 |        313        4.09       62.05
+          4 |        379        4.95       67.00
+          5 |        427        5.58       72.57
+          6 |        129        1.68       74.26
+          7 |      1,971       25.74      100.00
+------------+-----------------------------------
+      Total |      7,657      100.00
+
+.                 gen tabsent1=tact_7;
+(3362 missing values generated)
+
+.         label var tabsent1 "Teacher is absent on the day of the data collection";
+
+.         label val tabsent1 absence;
+
+.         **incorporating information from first three rounds in year 1;
+.         ** extra7: {TIS_old: 7. Is the teacher in school today [1: Yes, 2: No]};
+.         replace tabsent1=1 if extra7==2;
+(379 real changes made)
+
+.         replace tabsent1=0 if extra7==1;
+(1705 real changes made)
+
+.                 gen tabsent2=1 if t_status_previous_day==2;
+(8995 missing values generated)
+
+.  ** Previous day leave;
+.         replace tabsent2=0 if t_status_previous_day==1;
+(8995 real changes made)
+
+.         label var tabsent2 "Teacher is absent on the day _before_  data collection (from school register)";
+
+.         label val tabsent2 absence;
+
+.                 gen tabsent3=1 if teacher_signed_attendance==2;
+(8357 missing values generated)
+
+.  ** sameday attendance register not signed;
+.         replace tabsent3=0 if teacher_signed_attendance==1;
+(8356 real changes made)
+
+.         label var tabsent3 "Teacher's signature in attendance register for the day on which data was collected";
+note: label truncated to 80 characters
+
+.         label val tabsent3 absence;
+
+.         ** creating indicator variable for active teaching;
+.         gen tact_active=1 if inlist(teacher_activity,1);
+(7776 missing values generated)
+
+.         replace tact_active=0 if inlist(teacher_activity,2,3,4,5,6,7);
+(4414 real changes made)
+
+.         label var tact_active "Teacher is actively teaching (teacher_activity=1)";
+
+.         label define active 0 "Not Actively Teaching" 1 "Actively Teaching";
+
+.         label val tact_active active;
+
+.         ** creating indicator variable for active or passive teaching;
+.         gen tact_teach=1 if inlist(teacher_activity,1,2);
+(6581 missing values generated)
+
+.         replace tact_teach=0 if inlist(teacher_activity,3,4,5,6,7);
+(3219 real changes made)
+
+.         label var tact_teach "Teacher is either actively or passively teaching (teacher_activity=1;teacher_activity=2)";
+note: label truncated to 80 characters
+
+. ** creating indicator variable for teacher idleness;
+.         gen tact_idle=1 if inlist(teacher_activity,3,4);
+(10327 missing values generated)
+
+.         replace tact_idle=0 if inlist(teacher_activity,1,2,5,6,7);
+(6965 real changes made)
+
+.         label var tact_idle "Teacher is not teaching (teacher_activity=3;teacher_activity=4)";
+
+. ** creating indicator variable for administrative work/MC accompaniment;
+.         gen tact_admin=1 if inlist(teacher_activity,5,6);
+(10463 missing values generated)
+
+.         replace tact_admin=0 if inlist(teacher_activity,1,2,3,4,7);
+(7101 real changes made)
+
+.         label var tact_admin "Teacher is doing administrative work in the school (teacher_activity=5;teacher_activity=6)";
+note: label truncated to 80 characters
+
+. ** creating indicator variables for types of teacher idleness from c8;
+.         tab teacher_activity_if_not_teach, gen(teacher_activity_if_not_teach);
+
+teacher_act |
+ivity_if_no |
+    t_teach |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          1 |        305       33.41       33.41
+          2 |        160       17.52       50.93
+          3 |          7        0.77       51.70
+          4 |         20        2.19       53.89
+          5 |         72        7.89       61.77
+          6 |        349       38.23      100.00
+------------+-----------------------------------
+      Total |        913      100.00
+
+. ** creating indicator variable for teacher on official duty from c10 and c16;
+.         gen toffice1=1 if inlist(t_off_status_if_not_in_schl,1);
+(10578 missing values generated)
+
+.         replace toffice1=0 if inrange(t_off_status_if_not_in_schl,2,13);
+(2225 real changes made)
+
+.         label var toffice1 "Teacher is on leave for official teaching related duty (training, meeting etc.)";
+
+.         ** previous day status;
+.                 gen toffice2=1 if inlist(t_stat_prev_day_if_absent,1);
+(10678 missing values generated)
+
+.         replace toffice2=0 if inrange(t_stat_prev_day_if_absent,2,13);
+(1170 real changes made)
+
+.         label var toffice2 "Teacher was on leave on the day _before_ data was collected for official teaching related duty (traini
+> ng, meeting etc.)";
+note: label truncated to 80 characters
+
+.         ** creating indicator variable for teacher on training from c11;
+.         gen ttrain=1 if inlist(t_off_teaching_related_duty,2,3);
+(10847 missing values generated)
+
+.         replace ttrain=0 if inlist(t_off_teaching_related_duty,1,4,5,6);
+(213 real changes made)
+
+.         label var ttrain "Teacher is on leave to attend training";
+
+.         ** creating indicator variable for teacher leaves from c10, c13 c16;
+.         gen tleave1=1 if inlist(t_off_status_if_not_in_schl,8);
+(9599 missing values generated)
+
+.         replace tleave1=0 if inlist(t_off_status_if_not_in_schl,1,2,3,4,5,6,7,9,10,11,12,13);
+(1246 real changes made)
+
+.         label var tleave1 "Teacher is on authorized leave";
+
+.         ** previous day authorised leave;
+.         gen tleave2=1 if inlist(t_off_status_if_not_in_schl,8);
+(9599 missing values generated)
+
+.         replace tleave2=0 if inlist(t_off_status_if_not_in_schl,1,2,3,4,5,6,7,9,10,11,12,13);
+(1246 real changes made)
+
+.         label var tleave2 "Teacher was on authorized leave on the day _before_ data was collected";
+
+.                 tab t_reasons_for_leave_request, gen(tleave_);
+
+t_reasons_f |
+or_leave_re |
+      quest |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          1 |         36        3.17        3.17
+          2 |        154       13.58       16.75
+          3 |        721       63.58       80.34
+          4 |        111        9.79       90.12
+          5 |         22        1.94       92.06
+          6 |         82        7.23       99.29
+          7 |          8        0.71      100.00
+------------+-----------------------------------
+      Total |      1,134      100.00
+
+.         rename treatment_code school_treatment;
+
+. do stata\create_int_umc.do;
+
+. #delimit ;
+delimiter now ;
+. **Date: Februrary 18, 2008;
+. **description: this file creates mandal code;
+. cap drop U_MC;
+
+. cap gen U_MC=int(apfschoolcode/100);
+
+. cap gen U_MC=int(apf_code/100);
+
+. cap gen U_MC=int(apf_school_code/100);
+
+. 
+end of do-file
+
+. gen incentive=1 if inlist(school_treatment,4,5);
+(3674 missing values generated)
+
+. replace incentive=0 if school_treatment==1;
+(3674 real changes made)
+
+. foreach v of var tabsent1 tact_active  {;
+  2. areg  `v' incentive if inlist(school_treatment,1,4,5) , absorb(U_MC) cluster(apfschoolcode);
+  3. };
+
+Linear regression, absorbing indicators                Number of obs =    9741
+                                                       F(  1,   305) =    1.66
+                                                       Prob > F      =  0.1992
+                                                       R-squared     =  0.0139
+                                                       Adj R-squared =  0.0087
+                                                       Root MSE      =    .426
+
+                        (Std. Err. adjusted for 306 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+    tabsent1 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+   incentive |   .0131807   .0102455     1.29   0.199    -.0069801    .0333415
+       _cons |   .2324585   .0088064    26.40   0.000     .2151296    .2497874
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (51 categories)
+
+Linear regression, absorbing indicators                Number of obs =    7657
+                                                       F(  1,   305) =    0.74
+                                                       Prob > F      =  0.3911
+                                                       R-squared     =  0.0662
+                                                       Adj R-squared =  0.0599
+                                                       Root MSE      =  .47912
+
+                        (Std. Err. adjusted for 306 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+ tact_active |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+   incentive |  -.0126486   .0147282    -0.86   0.391    -.0416304    .0163331
+       _cons |   .4319505   .0124489    34.70   0.000     .4074538    .4564471
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (51 categories)
+
+. clear;
+
+. use data\dta\teacher_interviews_y1_y2.dta, clear;
+
+. do stata\create_treatment_dummies.do;
+
+. #delimit;
+delimiter now ;
+. **generate treatment dummies;
+. **generating treatment dummies for different regressions;
+. cap rename tre_code treatment_code;
+
+. cap tab treatment_code, gen(treatment);
+
+. cap tab school_treatment, gen(treatment);
+
+. cap tab treatmentcode, gen(treatment);
+
+. cap tab treatment, gen(treatment);
+
+. cap gen incentive=treatment4==treatment5==0;
+
+. cap gen input=treatment2==treatment3==0;
+
+. cap gen II=treatment5;
+
+. cap gen GI=treatment4;
+
+. cap gen VV=treatment2;
+
+. cap gen BG=treatment3;
+
+. cap gen control=treatment1;
+
+. cap gen pure_control=treatment6;
+
+. 
+end of do-file
+
+. do stata\create_int_umc.do;
+
+. #delimit ;
+delimiter now ;
+. **Date: Februrary 18, 2008;
+. **description: this file creates mandal code;
+. cap drop U_MC;
+
+. cap gen U_MC=int(apfschoolcode/100);
+
+. cap gen U_MC=int(apf_code/100);
+
+. cap gen U_MC=int(apf_school_code/100);
+
+. 
+end of do-file
+
+. rename treatmentcode school_treatment;
+
+. gen Prep=special_prep_assessment==1;
+
+. gen HW=extra_hmwk==1;
+
+. label var HW "More Homework";
+
+. gen CW=extra_clswork==2;
+
+. label var CW "More Classwork";
+
+. gen EC=extra_teaching_after_cls==3;
+
+. label var EC "Extra Coaching Classes";
+
+. gen Exams=extra_practice_papers==4;
+
+. label var Exams "Gave Practice Tests";
+
+. gen SA_WS= extra_atten_weaker_stud==5;
+
+. label var SA_WS "Special Attention to Weaker Students";
+
+. egen EAC = rsum( HW CW EC Exams SA_WS);
+
+. label var EAC "Extra Activity Count";
+
+. foreach v of var Prep - EAC {;
+  2. eststo: areg  `v' incentive if inlist(school_treatment,1,4,5), absorb(U_MC) cluster(apfschoolcode);
+  3. estimates store `v';
+  4. };
+
+Linear regression, absorbing indicators                Number of obs =    1555
+                                                       F(  1,   304) =  133.42
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2509
+                                                       Adj R-squared =  0.2255
+                                                       Root MSE      =  .43879
+
+                        (Std. Err. adjusted for 305 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+        Prep |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+   incentive |   .3149334   .0272652    11.55   0.000     .2612809    .3685858
+       _cons |    .321223   .0229542    13.99   0.000     .2760537    .3663924
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (51 categories)
+(est1 stored)
+
+Linear regression, absorbing indicators                Number of obs =    1555
+                                                       F(  1,   304) =   77.86
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2359
+                                                       Adj R-squared =  0.2100
+                                                       Root MSE      =  .42509
+
+                        (Std. Err. adjusted for 305 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+          HW |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+   incentive |   .2263237   .0256485     8.82   0.000     .1758526    .2767947
+       _cons |   .1967994   .0208811     9.42   0.000     .1557096    .2378892
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (51 categories)
+(est2 stored)
+
+Linear regression, absorbing indicators                Number of obs =    1555
+                                                       F(  1,   304) =   95.55
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2115
+                                                       Adj R-squared =  0.1848
+                                                       Root MSE      =  .44138
+
+                        (Std. Err. adjusted for 305 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+          CW |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+   incentive |   .2424472   .0248028     9.77   0.000     .1936403    .2912541
+       _cons |   .2261363   .0198331    11.40   0.000     .1871088    .2651638
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (51 categories)
+(est3 stored)
+
+Linear regression, absorbing indicators                Number of obs =    1555
+                                                       F(  1,   304) =   25.61
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.1596
+                                                       Adj R-squared =  0.1311
+                                                       Root MSE      =  .31083
+
+                        (Std. Err. adjusted for 305 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+          EC |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+   incentive |   .1051054   .0207704     5.06   0.000     .0642334    .1459773
+       _cons |   .0544672   .0177706     3.07   0.002     .0194981    .0894362
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (51 categories)
+(est4 stored)
+
+Linear regression, absorbing indicators                Number of obs =    1555
+                                                       F(  1,   304) =   33.90
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.1934
+                                                       Adj R-squared =  0.1661
+                                                       Root MSE      =  .39799
+
+                        (Std. Err. adjusted for 305 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+       Exams |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+   incentive |   .1598279    .027449     5.82   0.000     .1058138     .213842
+       _cons |   .1438621   .0233256     6.17   0.000      .097962    .1897621
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (51 categories)
+(est5 stored)
+
+Linear regression, absorbing indicators                Number of obs =    1555
+                                                       F(  1,   304) =   41.68
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.1849
+                                                       Adj R-squared =  0.1573
+                                                       Root MSE      =  .33731
+
+                        (Std. Err. adjusted for 305 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+       SA_WS |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+   incentive |   .1268882   .0196546     6.46   0.000      .088212    .1655645
+       _cons |   .0728067   .0159779     4.56   0.000     .0413654     .104248
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (51 categories)
+(est6 stored)
+
+Linear regression, absorbing indicators                Number of obs =    1555
+                                                       F(  1,   304) =   89.93
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2435
+                                                       Adj R-squared =  0.2178
+                                                       Root MSE      =  1.3281
+
+                        (Std. Err. adjusted for 305 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+         EAC |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+   incentive |   .8605924   .0907495     9.48   0.000     .6820157    1.039169
+       _cons |   .6940716   .0772741     8.98   0.000     .5420119    .8461314
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (51 categories)
+(est7 stored)
+
+. estimates table Prep  HW CW EC Exams SA_WS;
+
+--------------------------------------------------------------------------------------------
+    Variable |    Prep          HW           CW           EC         Exams        SA_WS     
+-------------+------------------------------------------------------------------------------
+   incentive |  .31493337    .22632368    .24244717    .10510536    .15982793    .12688824  
+       _cons |  .32122304    .19679941     .2261363    .05446715    .14386205    .07280674  
+--------------------------------------------------------------------------------------------
+
+. gen motivation=motivation_increased_incentives==1;
+
+.  replace motivation=1 if motivation_increased_incentives==2;
+(722 real changes made)
+
+. gen sixth_pay_com=opinon_6th_pay_com==2;
+
+. replace sixth_pay_com=1 if opinon_6th_pay_com==3;
+(352 real changes made)
+
+. replace sixth_pay_com=1 if opinon_6th_pay_com==4;
+(348 real changes made)
+
+. gen favorable_idea=opinion_performance_based_pay==1;
+
+. replace favorable_idea=1 if opinion_performance_based_pay==2;
+(908 real changes made)
+
+. gen scale_up=opinion_aprest_inc_program ==1;
+
+. table motivation if incentive==1, row;
+
+----------------------
+motivatio |
+n         |      Freq.
+----------+-----------
+        0 |        257
+        1 |        821
+          | 
+    Total |      1,078
+----------------------
+
+. table sixth_pay_com if incentive==1, row;
+
+----------------------
+sixth_pay |
+_com      |      Freq.
+----------+-----------
+        0 |        254
+        1 |        824
+          | 
+    Total |      1,078
+----------------------
+
+. table favorable_idea if incentive==1, row;
+
+----------------------
+favorable |
+_idea     |      Freq.
+----------+-----------
+        0 |        139
+        1 |        939
+          | 
+    Total |      1,078
+----------------------
+
+. table scale_up if incentive==1, row;
+
+----------------------
+ scale_up |      Freq.
+----------+-----------
+        0 |        344
+        1 |        734
+          | 
+    Total |      1,078
+----------------------
+
+. **Next section is the Relationship between test scores and teacher behaviors reported in table 8;
+. use data\dta\teacher_interviews_y1_y2.dta, clear;
+
+. do stata\create_treatment_dummies.do;
+
+. #delimit;
+delimiter now ;
+. **generate treatment dummies;
+. **generating treatment dummies for different regressions;
+. cap rename tre_code treatment_code;
+
+. cap tab treatment_code, gen(treatment);
+
+. cap tab school_treatment, gen(treatment);
+
+. cap tab treatmentcode, gen(treatment);
+
+. cap tab treatment, gen(treatment);
+
+. cap gen incentive=treatment4==treatment5==0;
+
+. cap gen input=treatment2==treatment3==0;
+
+. cap gen II=treatment5;
+
+. cap gen GI=treatment4;
+
+. cap gen VV=treatment2;
+
+. cap gen BG=treatment3;
+
+. cap gen control=treatment1;
+
+. cap gen pure_control=treatment6;
+
+. 
+end of do-file
+
+. do stata\create_int_umc.do;
+
+. #delimit ;
+delimiter now ;
+. **Date: Februrary 18, 2008;
+. **description: this file creates mandal code;
+. cap drop U_MC;
+
+. cap gen U_MC=int(apfschoolcode/100);
+
+. cap gen U_MC=int(apf_code/100);
+
+. cap gen U_MC=int(apf_school_code/100);
+
+. 
+end of do-file
+
+. gen Prep=special_prep_assessment==1;
+
+. gen HW=extra_hmwk==1;
+
+. label var HW "More Homework";
+
+. gen CW=extra_clswork==2;
+
+. label var CW "More Classwork";
+
+. gen EC=extra_teaching_after_cls==3;
+
+. label var EC "Extra Coaching Classes";
+
+. gen Exams=extra_practice_papers==4;
+
+. label var Exams "Gave Practice Tests";
+
+. gen SA_WS= extra_atten_weaker_stud==5;
+
+. label var SA_WS "Special Attention to Weaker Students";
+
+. egen EAC = rsum( HW CW EC Exams SA_WS);
+
+. label var EAC "Extra Activity Count";
+
+. keep hplteacherkey year Prep - EAC;
+
+. save data\dta\temp1.dta, replace;
+file data\dta\temp1.dta saved
+
+. **YEAR 1;
+. keep if year==1;
+(1490 observations deleted)
+
+. foreach var of varlist hplteacherkey-EAC {;
+  2. rename `var' `var'_y1;
+  3. };
+
+. keep hplteacherkey Prep - EAC ;
+
+. sort hplteacherkey_y1;
+
+. save data\dta\teach_int_char_y1.dta, replace;
+(note: file data\dta\teach_int_char_y1.dta not found)
+file data\dta\teach_int_char_y1.dta saved
+
+. **YEAR 2;
+.  use data\dta\temp1.dta, clear;
+
+. keep if year==2;
+(1244 observations deleted)
+
+. foreach var of varlist hplteacherkey - EAC {;
+  2. rename `var' `var'_y2;
+  3. };
+
+. keep hplteacherkey Prep - EAC ;
+
+. sort hplteacherkey_y2;
+
+. save data\dta\teach_int_char_y2.dta, replace;
+(note: file data\dta\teach_int_char_y2.dta not found)
+file data\dta\teach_int_char_y2.dta saved
+
+. use data\dta\Incentives_JPE_analysis_starter_file.dta, clear;
+
+. sort hplteacherkey_y1;
+
+. merge hplteacherkey_y1 using data\dta\teach_int_char_y1.dta;
+(note: you are using old merge syntax; see [R] merge for new syntax)
+variable hplteacherkey_y1 does not uniquely identify observations in the master data
+
+.  tab _m;
+
+     _merge |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          1 |    101,172       52.01       52.01
+          2 |        557        0.29       52.29
+          3 |     92,812       47.71      100.00
+------------+-----------------------------------
+      Total |    194,541      100.00
+
+.  drop _m;
+
+. sort hplteacherkey_y2;
+
+. merge hplteacherkey_y2 using data\dta\teach_int_char_y2.dta;
+(note: you are using old merge syntax; see [R] merge for new syntax)
+variable hplteacherkey_y2 does not uniquely identify observations in the master data
+
+.  tab _m;
+
+     _merge |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          1 |     67,997       34.82       34.82
+          2 |        740        0.38       35.20
+          3 |    126,544       64.80      100.00
+------------+-----------------------------------
+      Total |    195,281      100.00
+
+.  drop _m;
+
+. bysort hplstudentkey sub : keep if _n==1;
+(98288 observations deleted)
+
+. drop level;
+
+. foreach i in y1 y2 {;
+  2.  ren Prep_`i' t_special_test_prep_`i';
+  3. ren HW_`i' t_extra_hmwk_`i';
+  4. ren CW_`i' t_extra_clswk_`i';
+  5. ren EC_`i' t_extra_class_teach_`i';
+  6. ren Exams_`i' t_extra_pract_exams_`i';
+  7. ren SA_WS_`i' t_extra_attent_weakstud_`i';
+  8. };
+
+. **TEACHER ABSENCE AND ACTIVITY VARIABLES;
+. egen tabsent_y2=rmean(tabsent1_y2 tabsent2_y2);
+(14383 missing values generated)
+
+. egen tabsent_y1=rmean(tabsent1_y1 tabsent2_y1);
+(33895 missing values generated)
+
+. save data\dta\temp1.dta, replace;
+file data\dta\temp1.dta saved
+
+. drop if school_treatment==6 | school_treatment==7;
+(0 observations deleted)
+
+. keep hplstudentkey y2_nts_level_mean y1_nts_level_mean sub   tabsent_y2 tact_active_y2
+> t_extra_hmwk_y2 t_extra_clswk_y2 t_extra_class_teach_y2
+> t_extra_pract_exams_y2 t_extra_attent_weakstud_y2 t_special_test_prep_y2
+> school_treatment cheaters U_MC apfschoolcode incentive input II GI teacher_group_y2 t_deg_y2;
+
+. rename y2_nts_level_mean y_nts;
+
+. rename y1_nts_level_mean y_lagged_nts;
+
+. rename tabsent_y2 tabsent;
+
+. rename tact_active_y2 tact_active;
+
+. rename t_extra_hmwk_y2 t_extra_hmwk;
+
+. rename t_extra_clswk_y2 t_extra_clswk;
+
+. rename t_extra_class_teach_y2 t_extra_class_teach;
+
+. rename t_extra_pract_exams_y2 t_extra_pract_exams;
+
+. rename t_extra_attent_weakstud_y2 t_extra_attent_weakstud;
+
+. rename t_special_test_prep_y2 t_special_test_prep;
+
+. rename teacher_group_y2 teacher_group;
+
+. rename t_deg_y2 t_deg;
+
+. gen year=2;
+
+. save data\dta\stacked_format_table8_regressions_y2.dta, replace;
+(note: file data\dta\stacked_format_table8_regressions_y2.dta not found)
+file data\dta\stacked_format_table8_regressions_y2.dta saved
+
+. use data\dta\temp1.dta, clear;
+
+. drop if school_treatment==6 | school_treatment==7;
+(0 observations deleted)
+
+. keep hplstudentkey y1_nts_level_mean y0_nts sub   tabsent_y1 tact_active_y1
+> t_extra_hmwk_y1 t_extra_clswk_y1 t_extra_class_teach_y1
+> t_extra_pract_exams_y1 t_extra_attent_weakstud_y1 t_special_test_prep_y1
+> school_treatment cheaters U_MC apfschoolcode incentive input II GI teacher_group_y1 t_deg_y1;
+
+. rename y1_nts_level_mean y_nts;
+
+. rename y0_nts y_lagged_nts;
+
+. rename tabsent_y1 tabsent;
+
+. rename tact_active_y1 tact_active;
+
+. rename t_extra_hmwk_y1 t_extra_hmwk;
+
+. rename t_extra_clswk_y1 t_extra_clswk;
+
+. rename t_extra_class_teach_y1 t_extra_class_teach;
+
+. rename t_extra_pract_exams_y1 t_extra_pract_exams;
+
+. rename t_extra_attent_weakstud_y1 t_extra_attent_weakstud;
+
+. rename t_special_test_prep_y1 t_special_test_prep;
+
+. rename teacher_group_y1 teacher_group;
+
+. rename t_deg_y1 t_deg;
+
+. gen year=1;
+
+. save data\dta\stacked_format_table8_regressions_y1.dta, replace;
+(note: file data\dta\stacked_format_table8_regressions_y1.dta not found)
+file data\dta\stacked_format_table8_regressions_y1.dta saved
+
+. clear;
+
+. use data\dta\stacked_format_table8_regressions_y2.dta;
+
+. append using data\dta\stacked_format_table8_regressions_y1.dta;
+(label teacher_designation already defined)
+(label treatment already defined)
+
+. replace cheaters=0 if year==1;
+(573 real changes made)
+
+. order  tabsent tact_active t_special_test_prep -  t_extra_attent_weakstud;
+
+. foreach var of varlist tabsent -  t_extra_attent_weakstud {;
+  2. disp "regression of y(t) on y(t-1) and process variable: `var'";
+  3. areg y_nts y_lagged_nts `var' if inlist(school_treatment,1,4,5) &  cheaters!=1 & teacher_group!=1, absorb(U_MC) cluster(apfscho
+> olcode);
+  4. estimates store `var';
+  5. };
+regression of y(t) on y(t-1) and process variable: tabsent
+
+Linear regression, absorbing indicators                Number of obs =   76627
+                                                       F(  2,   299) =  690.20
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2734
+                                                       Adj R-squared =  0.2729
+                                                       Root MSE      =  .86006
+
+                        (Std. Err. adjusted for 300 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+       y_nts |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+y_lagged_nts |   .5089479   .0137025    37.14   0.000     .4819824    .5359134
+     tabsent |  -.1026102   .0754484    -1.36   0.175    -.2510873    .0458669
+       _cons |   .0736696   .0203237     3.62   0.000     .0336739    .1136653
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+regression of y(t) on y(t-1) and process variable: tact_active
+
+Linear regression, absorbing indicators                Number of obs =   76358
+                                                       F(  2,   299) =  748.94
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2740
+                                                       Adj R-squared =  0.2735
+                                                       Root MSE      =  .85994
+
+                        (Std. Err. adjusted for 300 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+       y_nts |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+y_lagged_nts |   .5082761   .0136544    37.22   0.000     .4814052     .535147
+ tact_active |   .1351395   .0424956     3.18   0.002     .0515111    .2187679
+       _cons |  -.0061574     .02663    -0.23   0.817    -.0585634    .0462486
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+regression of y(t) on y(t-1) and process variable: t_special_test_prep
+
+Linear regression, absorbing indicators                Number of obs =   57415
+                                                       F(  2,   298) =  701.74
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2819
+                                                       Adj R-squared =  0.2812
+                                                       Root MSE      =  .86276
+
+                        (Std. Err. adjusted for 299 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+       y_nts |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+y_lagged_nts |   .5163805   .0137837    37.46   0.000     .4892548    .5435063
+t_special_~p |   .0946537   .0399969     2.37   0.019     .0159415    .1733659
+       _cons |   .0017726   .0283893     0.06   0.950    -.0540964    .0576415
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+regression of y(t) on y(t-1) and process variable: t_extra_hmwk
+
+Linear regression, absorbing indicators                Number of obs =   57415
+                                                       F(  2,   298) =  698.66
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2808
+                                                       Adj R-squared =  0.2801
+                                                       Root MSE      =  .86342
+
+                        (Std. Err. adjusted for 299 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+       y_nts |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+y_lagged_nts |   .5172506   .0138989    37.22   0.000     .4898981     .544603
+t_extra_hmwk |   .0605832   .0437405     1.39   0.167    -.0254962    .1466626
+       _cons |   .0314984   .0253412     1.24   0.215     -.018372    .0813688
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+regression of y(t) on y(t-1) and process variable: t_extra_clswk
+
+Linear regression, absorbing indicators                Number of obs =   57415
+                                                       F(  2,   298) =  694.95
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2815
+                                                       Adj R-squared =  0.2809
+                                                       Root MSE      =  .86299
+
+                        (Std. Err. adjusted for 299 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+       y_nts |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+y_lagged_nts |   .5173511   .0139275    37.15   0.000     .4899424    .5447599
+t_extra_cl~k |   .0844393   .0380224     2.22   0.027     .0096129    .1592658
+       _cons |   .0190523   .0241068     0.79   0.430    -.0283888    .0664933
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+regression of y(t) on y(t-1) and process variable: t_extra_class_teach
+
+Linear regression, absorbing indicators                Number of obs =   57415
+                                                       F(  2,   298) =  705.06
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2840
+                                                       Adj R-squared =  0.2834
+                                                       Root MSE      =  .86147
+
+                        (Std. Err. adjusted for 299 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+       y_nts |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+y_lagged_nts |   .5158574   .0137757    37.45   0.000     .4887474    .5429674
+t_extra_cl~h |   .1981093   .0568891     3.48   0.001     .0861541    .3100646
+       _cons |   .0246775   .0190392     1.30   0.196    -.0127909    .0621459
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+regression of y(t) on y(t-1) and process variable: t_extra_pract_exams
+
+Linear regression, absorbing indicators                Number of obs =   57415
+                                                       F(  2,   298) =  742.32
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2819
+                                                       Adj R-squared =  0.2812
+                                                       Root MSE      =  .86278
+
+                        (Std. Err. adjusted for 299 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+       y_nts |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+y_lagged_nts |   .5158779   .0140838    36.63   0.000     .4881617    .5435942
+t_extra_pr~s |   .1049002   .0419618     2.50   0.013     .0223212    .1874793
+       _cons |   .0261996   .0225337     1.16   0.246    -.0181457    .0705449
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+regression of y(t) on y(t-1) and process variable: t_extra_attent_weakstud
+
+Linear regression, absorbing indicators                Number of obs =   57415
+                                                       F(  2,   298) =  708.81
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2801
+                                                       Adj R-squared =  0.2795
+                                                       Root MSE      =  .86381
+
+                        (Std. Err. adjusted for 299 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+       y_nts |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+y_lagged_nts |   .5176605    .013938    37.14   0.000     .4902311      .54509
+t_extra_at~d |   .0102038   .0535449     0.19   0.849    -.0951703    .1155779
+       _cons |   .0516741   .0221343     2.33   0.020     .0081148    .0952334
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+
+. estout tabsent tact_active t_special_test_prep t_extra_hmwk t_extra_clswk t_extra_class_teach t_extra_pract_exams t_extra_attent_w
+> eakstud, starlevels(* 0.10 ** 0.05 *** .01 ) cells(b(fmt(3) star));
+
+------------------------------------------------------------------------------------------------------------------------------------
+> --------
+                  tabsent     tact_active    t_special_~p    t_extra_hmwk    t_extra_cl~k    t_extra_cl~h    t_extra_pr~s    t_extra
+> _at~d   
+                        b               b               b               b               b               b               b           
+>     b   
+------------------------------------------------------------------------------------------------------------------------------------
+> --------
+y_lagged_nts        0.509***        0.508***        0.516***        0.517***        0.517***        0.516***        0.516***        
+> 0.518***
+tabsent            -0.103                                                                                                           
+>         
+tact_active                         0.135***                                                                                        
+>         
+t_special_~p                                        0.095**                                                                         
+>         
+t_extra_hmwk                                                        0.061                                                           
+>         
+t_extra_cl~k                                                                        0.084**                                         
+>         
+t_extra_cl~h                                                                                        0.198***                        
+>         
+t_extra_pr~s                                                                                                        0.105**         
+>         
+t_extra_at~d                                                                                                                        
+> 0.010   
+_cons               0.074***       -0.006           0.002           0.031           0.019           0.025           0.026           
+> 0.052** 
+------------------------------------------------------------------------------------------------------------------------------------
+> --------
+
+. log close;
+      name:  <unnamed>
+       log:  c:\JPE\stata\\logs\\Incentives_JPE_table8.txt
+  log type:  text
+ closed on:   8 Feb 2011, 16:40:59
+------------------------------------------------------------------------------------------------------------------------------------

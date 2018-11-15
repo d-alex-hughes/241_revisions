@@ -1,0 +1,714 @@
+------------------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  c:\JPE\stata\\logs\\Incentives_JPE_table5A.txt
+  log type:  text
+ opened on:   8 Feb 2011, 13:23:59
+
+. use data\dta\Incentives_JPE_analysis_starter_file.dta, clear;
+
+. **keeping only one observation per student per subject (i.e. removing round LEL or HEL as a dimension);
+. bysort hplstudentkey sub : keep if _n==1;
+(96992 observations deleted)
+
+. **Log School Enrollment;
+. gen log_schl_enroll_y2_int_inc=log_schl_enrollment_y2*incentive;
+(234 missing values generated)
+
+. gen log_schl_enroll_y1_int_inc=log_schl_enrollment_y1*incentive;
+
+. **Proximity;
+. gen prox_index_mean_int_inc=prox_index_mean*incentive;
+
+. gen prox_index_y2_int_inc=prox_index_y2*incentive;
+(234 missing values generated)
+
+. gen prox_index_y1_int_inc=prox_index_y1*incentive;
+(2678 missing values generated)
+
+. **Infrastructure;
+. gen infra_index_mean_int_inc=infra_index_mean*incentive;
+
+. gen infra_index_y2_int_inc=infra_index_y2*incentive;
+(234 missing values generated)
+
+. gen infra_index_y1_int_inc=infra_index_y1*incentive;
+(2678 missing values generated)
+
+. **Household Affluence,  Parent Literacy and Baseline Score;
+. foreach var of varlist hh_affluence_index parent_literacy_index y0_nts  {;
+  2. gen `var'_int_inc=`var'*incentive;
+  3. disp "`var'";
+  4. };
+(28452 missing values generated)
+hh_affluence_index
+(28500 missing values generated)
+parent_literacy_index
+(40266 missing values generated)
+y0_nts
+
+. **Caste;
+. gen SC_ST=SC==ST==0;
+
+. gen SC_ST_int_inc=SC_ST*incentive;
+
+.  **Male;
+. gen Male_int_inc=Male*incentive;
+(22920 missing values generated)
+
+. save data\dta\Incentives_JPE_table5_panelA_INT.dta, replace;
+(note: file data\dta\Incentives_JPE_table5_panelA_INT.dta not found)
+file data\dta\Incentives_JPE_table5_panelA_INT.dta saved
+
+. **********************PART II***********************;
+. **REGRESSIONS AND TESTING HYPOTHESES FOR HETEROGENOUS TREATMENT EFFECTS;
+. **y2 on y0;
+. disp "Log School Enrollment Year 2";
+Log School Enrollment Year 2
+
+. areg y2_nts_level_mean y0_nts incentive log_schl_enrollment_y2 log_schl_enroll_y2_int_inc if inlist(school_treatment,1,4,5) & chea
+> ters==0, absorb(U_MC) cluster(apfschoolcode);
+
+Linear regression, absorbing indicators                Number of obs =   29760
+                                                       F(  4,   297) =  241.63
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2435
+                                                       Adj R-squared =  0.2421
+                                                       Root MSE      =  .88219
+
+                        (Std. Err. adjusted for 298 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+y2_nts_lev~n |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      y0_nts |   .4513537   .0149053    30.28   0.000     .4220204     .480687
+   incentive |  -.1975337   .3535284    -0.56   0.577    -.8932719    .4982045
+log_schl_e~2 |  -.0648174   .0576602    -1.12   0.262    -.1782917     .048657
+lo~2_int_inc |   .0833802   .0735699     1.13   0.258    -.0614043    .2281646
+       _cons |   .2553286   .2814075     0.91   0.365    -.2984766    .8091339
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+
+. estimates store log_schl_enr_y2;
+
+. **y1 on y0;
+. disp "Log School Enrollment Year 1";
+Log School Enrollment Year 1
+
+. areg y1_nts_level_mean y0_nts incentive log_schl_enrollment_y1 log_schl_enroll_y1_int_inc if inlist(school_treatment,1,4,5) , abso
+> rb(U_MC) cluster(apfschoolcode);
+
+Linear regression, absorbing indicators                Number of obs =   42145
+                                                       F(  4,   299) =  402.73
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.3114
+                                                       Adj R-squared =  0.3105
+                                                       Root MSE      =   .8297
+
+                        (Std. Err. adjusted for 300 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+y1_nts_lev~n |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      y0_nts |   .5028834   .0125952    39.93   0.000     .4780968    .5276699
+   incentive |  -.3602881   .3813469    -0.94   0.346    -1.110752    .3901757
+log_schl_e~1 |  -.1275309   .0607157    -2.10   0.037    -.2470151   -.0080466
+lo~1_int_inc |   .1033824   .0805359     1.28   0.200    -.0551066    .2618715
+       _cons |   .6043277   .2879726     2.10   0.037     .0376179    1.171038
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+
+. estimates store log_schl_enr_y1;
+
+. **y2 on y0;
+. disp "Infrastructure Index Year 2";
+Infrastructure Index Year 2
+
+. areg y2_nts_level_mean y0_nts incentive infra_index_y2 infra_index_y2_int_inc if inlist(school_treatment,1,4,5) & cheaters==0, abs
+> orb(U_MC) cluster(apfschoolcode);
+
+Linear regression, absorbing indicators                Number of obs =   29760
+                                                       F(  4,   297) =  245.50
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2432
+                                                       Adj R-squared =  0.2419
+                                                       Root MSE      =  .88233
+
+                        (Std. Err. adjusted for 298 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+y2_nts_lev~n |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      y0_nts |   .4517963   .0148947    30.33   0.000     .4224837    .4811089
+   incentive |   .2796002     .13032     2.15   0.033     .0231326    .5360677
+infra_inde~2 |   .0249957   .0384235     0.65   0.516    -.0506212    .1006125
+in~2_int_inc |  -.0202167   .0400746    -0.50   0.614     -.099083    .0586495
+       _cons |  -.1440719   .1199625    -1.20   0.231    -.3801562    .0920124
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+
+. estimates store infra_y2;
+
+. **y1 on y0;
+. disp "Infra Index y1";
+Infra Index y1
+
+. areg y1_nts_level_mean y0_nts incentive infra_index_y1 infra_index_y1_int_inc if inlist(school_treatment,1,4,5) , absorb(U_MC) clu
+> ster(apfschoolcode);
+
+Linear regression, absorbing indicators                Number of obs =   41131
+                                                       F(  4,   293) =  416.10
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.3154
+                                                       Adj R-squared =  0.3145
+                                                       Root MSE      =  .82823
+
+                        (Std. Err. adjusted for 294 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+y1_nts_lev~n |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      y0_nts |   .5050306   .0124749    40.48   0.000     .4804787    .5295824
+   incentive |   .0322829   .1100238     0.29   0.769    -.1842542      .24882
+infra_inde~1 |   -.000917   .0248041    -0.04   0.971    -.0497339    .0478998
+in~1_int_inc |   .0412289   .0312325     1.32   0.188    -.0202395    .1026973
+       _cons |  -.0249769   .0835035    -0.30   0.765    -.1893196    .1393658
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+
+. estimates store infra_y1;
+
+. **y2 on y0;
+. disp "Proximity Index Year 2";
+Proximity Index Year 2
+
+. areg y2_nts_level_mean y0_nts incentive prox_index_y2 prox_index_y2_int_inc if inlist(school_treatment,1,4,5) & cheaters==0, absor
+> b(U_MC) cluster(apfschoolcode);
+
+Linear regression, absorbing indicators                Number of obs =   29760
+                                                       F(  4,   297) =  242.17
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2440
+                                                       Adj R-squared =  0.2426
+                                                       Root MSE      =   .8819
+
+                        (Std. Err. adjusted for 298 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+y2_nts_lev~n |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      y0_nts |   .4512522    .014947    30.19   0.000     .4218366    .4806677
+   incentive |  -.0191341   .1994546    -0.10   0.924    -.4116575    .3733894
+prox_index~2 |  -.0047516   .0101437    -0.47   0.640    -.0247142    .0152111
+pr~2_int_inc |   .0175966   .0138361     1.27   0.204    -.0096326    .0448258
+       _cons |  -.0058653   .1475608    -0.04   0.968    -.2962626    .2845319
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+
+. estimates store proxy_y2;
+
+. **y1 on y0;
+. disp "prox Index y1";
+prox Index y1
+
+. areg y1_nts_level_mean y0_nts incentive prox_index_y1 prox_index_y1_int_inc if inlist(school_treatment,1,4,5) , absorb(U_MC) clust
+> er(apfschoolcode);
+
+Linear regression, absorbing indicators                Number of obs =   41131
+                                                       F(  4,   293) =  426.11
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.3149
+                                                       Adj R-squared =  0.3140
+                                                       Root MSE      =  .82851
+
+                        (Std. Err. adjusted for 294 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+y1_nts_lev~n |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      y0_nts |   .5056293   .0126089    40.10   0.000     .4808139    .5304447
+   incentive |  -.0760246   .1610414    -0.47   0.637    -.3929692      .24092
+prox_index~1 |  -.0159245   .0083129    -1.92   0.056     -.032285     .000436
+pr~1_int_inc |   .0169432   .0109657     1.55   0.123    -.0046384    .0385247
+       _cons |   .1901995   .1240675     1.53   0.126     -.053977    .4343759
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+
+. estimates store proxy_y1;
+
+. **y2 on y0;
+. disp "household affluence index";
+household affluence index
+
+. areg y2_nts_level_mean y0_nts  incentive hh_affluence_index hh_affluence_index_int_inc if inlist(school_treatment,1,4,5) & cheater
+> s==0, absorb(U_MC) cluster(apfschoolcode);
+
+Linear regression, absorbing indicators                Number of obs =   25231
+                                                       F(  4,   297) =  252.38
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2723
+                                                       Adj R-squared =  0.2707
+                                                       Root MSE      =  .85987
+
+                        (Std. Err. adjusted for 298 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+y2_nts_lev~n |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      y0_nts |   .4495737   .0145913    30.81   0.000     .4208583     .478289
+   incentive |   .0899398   .0733313     1.23   0.221    -.0543751    .2342547
+hh_affluen~x |   .0168062   .0141579     1.19   0.236    -.0110563    .0446686
+hh_affluen~c |   .0383046   .0185849     2.06   0.040     .0017297    .0748794
+       _cons |  -.1456043   .0596272    -2.44   0.015    -.2629497   -.0282589
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+
+. estimates store hh_asset_y2;
+
+. **y1 on y0;
+. disp "household affluence index";
+household affluence index
+
+. areg y1_nts_level_mean y0_nts  incentive hh_affluence_index hh_affluence_index_int_inc if inlist(school_treatment,1,4,5) , absorb(
+> U_MC) cluster(apfschoolcode);
+
+Linear regression, absorbing indicators                Number of obs =   38545
+                                                       F(  4,   299) =  463.93
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.3346
+                                                       Adj R-squared =  0.3337
+                                                       Root MSE      =  .81316
+
+                        (Std. Err. adjusted for 300 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+y1_nts_lev~n |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      y0_nts |   .5023999   .0126177    39.82   0.000     .4775692    .5272305
+   incentive |   .0043291   .0603611     0.07   0.943    -.1144574    .1231156
+hh_affluen~x |   .0174039   .0128114     1.36   0.175     -.007808    .0426158
+hh_affluen~c |   .0423828   .0174774     2.43   0.016     .0079885    .0767771
+       _cons |  -.0885743   .0497229    -1.78   0.076    -.1864254    .0092768
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+
+. estimates store hh_asset_y1;
+
+. **y2 on y0;
+. disp "parent literacy";
+parent literacy
+
+. areg y2_nts_level_mean y0_nts  incentive parent_literacy_index parent_literacy_index_int_inc if inlist(school_treatment,1,4,5) & c
+> heaters==0, absorb(U_MC) cluster(apfschoolcode);
+
+Linear regression, absorbing indicators                Number of obs =   25226
+                                                       F(  4,   297) =  270.92
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2727
+                                                       Adj R-squared =  0.2712
+                                                       Root MSE      =  .85961
+
+                        (Std. Err. adjusted for 298 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+y2_nts_lev~n |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      y0_nts |   .4467238    .014859    30.06   0.000     .4174815    .4759661
+   incentive |   .2239432   .0541261     4.14   0.000     .1174239    .3304626
+parent_lit~x |   .0681226   .0147939     4.60   0.000     .0390085    .0972367
+parent_lit~c |  -.0029257   .0193056    -0.15   0.880    -.0409188    .0350673
+       _cons |  -.1571792   .0375046    -4.19   0.000    -.2309876   -.0833707
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+
+. estimates store parent_lit_y2;
+
+. **y1 on y0;
+. disp "parent literacy";
+parent literacy
+
+. areg y1_nts_level_mean y0_nts  incentive parent_literacy_index parent_literacy_index_int_inc if inlist(school_treatment,1,4,5) , a
+> bsorb(U_MC) cluster(apfschoolcode);
+
+Linear regression, absorbing indicators                Number of obs =   38525
+                                                       F(  4,   299) =  461.79
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.3351
+                                                       Adj R-squared =  0.3342
+                                                       Root MSE      =  .81286
+
+                        (Std. Err. adjusted for 300 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+y1_nts_lev~n |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      y0_nts |   .4990743   .0126765    39.37   0.000     .4741279    .5240207
+   incentive |   .1658922   .0470132     3.53   0.000     .0733736    .2584108
+parent_lit~x |   .0799144   .0124116     6.44   0.000     .0554892    .1043395
+parent_lit~c |   -.013007   .0163847    -0.79   0.428     -.045251     .019237
+       _cons |  -.1086089    .036539    -2.97   0.003     -.180515   -.0367028
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+
+. estimates store parent_lit_y1;
+
+. **y2 on y0;
+. disp "baseline score";
+baseline score
+
+. areg y2_nts_level_mean y0_nts  incentive y0_nts_int_inc if inlist(school_treatment,1,4,5) & cheaters==0, absorb(U_MC) cluster(apfs
+> choolcode);
+
+Linear regression, absorbing indicators                Number of obs =   29760
+                                                       F(  3,   297) =  319.81
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2430
+                                                       Adj R-squared =  0.2417
+                                                       Root MSE      =  .88246
+
+                        (Std. Err. adjusted for 298 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+y2_nts_lev~n |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      y0_nts |    .447905   .0241358    18.56   0.000     .4004062    .4954039
+   incentive |   .2189703   .0471769     4.64   0.000     .1261269    .3118137
+y0_nts_int~c |   .0057457   .0305112     0.19   0.851    -.0542999    .0657913
+       _cons |  -.0695116   .0347918    -2.00   0.047    -.1379814   -.0010419
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+
+. estimates store bl_score_y2;
+
+. **y1 on y0;
+. disp "baseline score";
+baseline score
+
+. areg y1_nts_level_mean y0_nts  incentive y0_nts_int_inc if inlist(school_treatment,1,4,5), absorb(U_MC) cluster(apfschoolcode);
+
+Linear regression, absorbing indicators                Number of obs =   42145
+                                                       F(  3,   299) =  525.03
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.3099
+                                                       Adj R-squared =  0.3090
+                                                       Root MSE      =   .8306
+
+                        (Std. Err. adjusted for 300 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+y1_nts_lev~n |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      y0_nts |   .5023592   .0210128    23.91   0.000     .4610074     .543711
+   incentive |   .1488285   .0423739     3.51   0.001     .0654397    .2322173
+y0_nts_int~c |   .0004625   .0255638     0.02   0.986    -.0498453    .0507702
+       _cons |   -.024978   .0336227    -0.74   0.458    -.0911452    .0411892
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+
+. estimates store bl_score_y1;
+
+. **y2 on y0;
+. disp "SC/ST";
+SC/ST
+
+. areg y2_nts_level_mean y0_nts  incentive SC_ST SC_ST_int_inc if inlist(school_treatment,1,4,5) & cheaters==0, absorb(U_MC) cluster
+> (apfschoolcode);
+
+Linear regression, absorbing indicators                Number of obs =   29760
+                                                       F(  4,   297) =  243.34
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2438
+                                                       Adj R-squared =  0.2425
+                                                       Root MSE      =  .88197
+
+                        (Std. Err. adjusted for 298 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+y2_nts_lev~n |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      y0_nts |   .4499927   .0149324    30.14   0.000     .4206059    .4793795
+   incentive |    .226216   .0486821     4.65   0.000     .1304103    .3220216
+       SC_ST |  -.0659963   .0420283    -1.57   0.117    -.1487074    .0167147
+SC_ST_int_~c |  -.0130118    .056232    -0.23   0.817    -.1236754    .0976518
+       _cons |   -.058685    .036041    -1.63   0.105    -.1296131     .012243
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+
+. estimates store SC_ST_y2;
+
+. **y1 on y0;
+. disp "SC/ST";
+SC/ST
+
+. areg y1_nts_level_mean y0_nts  incentive SC_ST SC_ST_int_inc if inlist(school_treatment,1,4,5) , absorb(U_MC) cluster(apfschoolcod
+> e);
+
+Linear regression, absorbing indicators                Number of obs =   42145
+                                                       F(  4,   299) =  397.72
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.3102
+                                                       Adj R-squared =  0.3093
+                                                       Root MSE      =  .83041
+
+                        (Std. Err. adjusted for 300 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+y1_nts_lev~n |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      y0_nts |   .5016844   .0127425    39.37   0.000      .476608    .5267608
+   incentive |   .1635732   .0452763     3.61   0.000     .0744726    .2526737
+       SC_ST |   .0071967    .035467     0.20   0.839    -.0625998    .0769933
+SC_ST_int_~c |  -.0603575   .0476224    -1.27   0.206    -.1540751      .03336
+       _cons |  -.0265188   .0353932    -0.75   0.454    -.0961701    .0431324
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+
+. estimates store SC_ST_y1;
+
+. **y2 on y0;
+. disp "Male";
+Male
+
+. areg y2_nts_level_mean y0_nts  incentive Male Male_int_inc if inlist(school_treatment,1,4,5) & cheaters==0, absorb(U_MC) cluster(a
+> pfschoolcode);
+
+Linear regression, absorbing indicators                Number of obs =   25881
+                                                       F(  4,   297) =  251.48
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2661
+                                                       Adj R-squared =  0.2646
+                                                       Root MSE      =  .86494
+
+                        (Std. Err. adjusted for 298 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+y2_nts_lev~n |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      y0_nts |    .452369   .0147659    30.64   0.000       .42331     .481428
+   incentive |   .2328822   .0490915     4.74   0.000      .136271    .3294934
+        Male |   .0292362   .0273225     1.07   0.285     -.024534    .0830064
+Male_int_inc |  -.0200686    .034165    -0.59   0.557    -.0873049    .0471676
+       _cons |  -.0970652   .0354674    -2.74   0.007    -.1668644   -.0272659
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+
+. estimates store gender_y2;
+
+. **y1 on y0;
+. disp "Male";
+Male
+
+. areg y1_nts_level_mean y0_nts  incentive Male Male_int_inc if inlist(school_treatment,1,4,5) , absorb(U_MC) cluster(apfschoolcode)
+> ;
+
+Linear regression, absorbing indicators                Number of obs =   39540
+                                                       F(  4,   299) =  415.03
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.3250
+                                                       Adj R-squared =  0.3241
+                                                       Root MSE      =  .82149
+
+                        (Std. Err. adjusted for 300 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+y1_nts_lev~n |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      y0_nts |   .5053145     .01265    39.95   0.000     .4804201    .5302089
+   incentive |   .1571063   .0439661     3.57   0.000     .0705842    .2436284
+        Male |   .0163502   .0203656     0.80   0.423    -.0237278    .0564282
+Male_int_inc |   .0017565   .0252849     0.07   0.945    -.0480024    .0515155
+       _cons |   -.030777   .0347964    -0.88   0.377    -.0992538    .0376999
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+
+. estimates store gender_y1;
+
+. estout log_schl_enr_y2 proxy_y2 infra_y2 hh_asset_y2  parent_lit_y2  SC_ST_y2  gender_y2 bl_score_y2 , stats(N r2)  cells(b(fmt(3)
+> ) se(par star fmt(3)))starlevels(* 0.10 ** 0.05 *** .01 );
+
+------------------------------------------------------------------------------------------------------------------------------------
+> --------
+             log_schl_e~2        proxy_y2        infra_y2     hh_asset_y2    parent_lit~2        SC_ST_y2       gender_y2     bl_sco
+> re_y2   
+                     b/se            b/se            b/se            b/se            b/se            b/se            b/se           
+>  b/se   
+------------------------------------------------------------------------------------------------------------------------------------
+> --------
+y0_nts              0.451           0.451           0.452           0.450           0.447           0.450           0.452           
+> 0.448   
+                  (0.015)***      (0.015)***      (0.015)***      (0.015)***      (0.015)***      (0.015)***      (0.015)***      (0
+> .024)***
+incentive          -0.198          -0.019           0.280           0.090           0.224           0.226           0.233           
+> 0.219   
+                  (0.354)         (0.199)         (0.130)**       (0.073)         (0.054)***      (0.049)***      (0.049)***      (0
+> .047)***
+log_schl_e~2       -0.065                                                                                                           
+>         
+                  (0.058)                                                                                                           
+>         
+lo~2_int_inc        0.083                                                                                                           
+>         
+                  (0.074)                                                                                                           
+>         
+prox_index~2                       -0.005                                                                                           
+>         
+                                  (0.010)                                                                                           
+>         
+pr~2_int_inc                        0.018                                                                                           
+>         
+                                  (0.014)                                                                                           
+>         
+infra_inde~2                                        0.025                                                                           
+>         
+                                                  (0.038)                                                                           
+>         
+in~2_int_inc                                       -0.020                                                                           
+>         
+                                                  (0.040)                                                                           
+>         
+hh_affluen~x                                                        0.017                                                           
+>         
+                                                                  (0.014)                                                           
+>         
+hh_affluen~c                                                        0.038                                                           
+>         
+                                                                  (0.019)**                                                         
+>         
+parent_lit~x                                                                        0.068                                           
+>         
+                                                                                  (0.015)***                                        
+>         
+parent_lit~c                                                                       -0.003                                           
+>         
+                                                                                  (0.019)                                           
+>         
+SC_ST                                                                                              -0.066                           
+>         
+                                                                                                  (0.042)                           
+>         
+SC_ST_int_~c                                                                                       -0.013                           
+>         
+                                                                                                  (0.056)                           
+>         
+Male                                                                                                                0.029           
+>         
+                                                                                                                  (0.027)           
+>         
+Male_int_inc                                                                                                       -0.020           
+>         
+                                                                                                                  (0.034)           
+>         
+y0_nts_int~c                                                                                                                        
+> 0.006   
+                                                                                                                                  (0
+> .031)   
+_cons               0.255          -0.006          -0.144          -0.146          -0.157          -0.059          -0.097          -
+> 0.070   
+                  (0.281)         (0.148)         (0.120)         (0.060)**       (0.038)***      (0.036)         (0.035)***      (0
+> .035)** 
+------------------------------------------------------------------------------------------------------------------------------------
+> --------
+N               29760.000       29760.000       29760.000       25231.000       25226.000       29760.000       25881.000       2976
+> 0.000   
+r2                  0.243           0.244           0.243           0.272           0.273           0.244           0.266           
+> 0.243   
+------------------------------------------------------------------------------------------------------------------------------------
+> --------
+
+. estout log_schl_enr_y1 proxy_y1 infra_y1 hh_asset_y1  parent_lit_y1  SC_ST_y1  gender_y1 bl_score_y1 , stats(N r2)  cells(b(fmt(3)
+> ) se(par star fmt(3)))starlevels(* 0.10 ** 0.05 *** .01 );
+
+------------------------------------------------------------------------------------------------------------------------------------
+> --------
+             log_schl_e~1        proxy_y1        infra_y1     hh_asset_y1    parent_lit~1        SC_ST_y1       gender_y1     bl_sco
+> re_y1   
+                     b/se            b/se            b/se            b/se            b/se            b/se            b/se           
+>  b/se   
+------------------------------------------------------------------------------------------------------------------------------------
+> --------
+y0_nts              0.503           0.506           0.505           0.502           0.499           0.502           0.505           
+> 0.502   
+                  (0.013)***      (0.013)***      (0.012)***      (0.013)***      (0.013)***      (0.013)***      (0.013)***      (0
+> .021)***
+incentive          -0.360          -0.076           0.032           0.004           0.166           0.164           0.157           
+> 0.149   
+                  (0.381)         (0.161)         (0.110)         (0.060)         (0.047)***      (0.045)***      (0.044)***      (0
+> .042)***
+log_schl_e~1       -0.128                                                                                                           
+>         
+                  (0.061)**                                                                                                         
+>         
+lo~1_int_inc        0.103                                                                                                           
+>         
+                  (0.081)                                                                                                           
+>         
+prox_index~1                       -0.016                                                                                           
+>         
+                                  (0.008)*                                                                                          
+>         
+pr~1_int_inc                        0.017                                                                                           
+>         
+                                  (0.011)                                                                                           
+>         
+infra_inde~1                                       -0.001                                                                           
+>         
+                                                  (0.025)                                                                           
+>         
+in~1_int_inc                                        0.041                                                                           
+>         
+                                                  (0.031)                                                                           
+>         
+hh_affluen~x                                                        0.017                                                           
+>         
+                                                                  (0.013)                                                           
+>         
+hh_affluen~c                                                        0.042                                                           
+>         
+                                                                  (0.017)**                                                         
+>         
+parent_lit~x                                                                        0.080                                           
+>         
+                                                                                  (0.012)***                                        
+>         
+parent_lit~c                                                                       -0.013                                           
+>         
+                                                                                  (0.016)                                           
+>         
+SC_ST                                                                                               0.007                           
+>         
+                                                                                                  (0.035)                           
+>         
+SC_ST_int_~c                                                                                       -0.060                           
+>         
+                                                                                                  (0.048)                           
+>         
+Male                                                                                                                0.016           
+>         
+                                                                                                                  (0.020)           
+>         
+Male_int_inc                                                                                                        0.002           
+>         
+                                                                                                                  (0.025)           
+>         
+y0_nts_int~c                                                                                                                        
+> 0.000   
+                                                                                                                                  (0
+> .026)   
+_cons               0.604           0.190          -0.025          -0.089          -0.109          -0.027          -0.031          -
+> 0.025   
+                  (0.288)**       (0.124)         (0.084)         (0.050)*        (0.037)***      (0.035)         (0.035)         (0
+> .034)   
+------------------------------------------------------------------------------------------------------------------------------------
+> --------
+N               42145.000       41131.000       41131.000       38545.000       38525.000       42145.000       39540.000       4214
+> 5.000   
+r2                  0.311           0.315           0.315           0.335           0.335           0.310           0.325           
+> 0.310   
+------------------------------------------------------------------------------------------------------------------------------------
+> --------
+
+. log close;
+      name:  <unnamed>
+       log:  c:\JPE\stata\\logs\\Incentives_JPE_table5A.txt
+  log type:  text
+ closed on:   8 Feb 2011, 13:24:28
+------------------------------------------------------------------------------------------------------------------------------------

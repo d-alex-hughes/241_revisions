@@ -1,0 +1,503 @@
+------------------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  c:\JPE\stata\\logs\\Incentives_JPE_table1B.txt
+  log type:  text
+ opened on:   8 Feb 2011, 13:21:59
+
+. ** DESCRIPTION: will create table 1 (B) teacher turnover and teacher attrition;
+. **Year 2 formatting;
+. use data\dta\teacher_class_y2.dta, clear;
+
+. replace apf_code=30105 if apf_code==31807;
+(0 real changes made)
+
+. drop if class=="NULL";
+(14 observations deleted)
+
+. replace deg_y2="" if deg_y2=="NULL";
+(515 real changes made)
+
+. destring deg_y2, replace;
+deg_y2 has all characters numeric; replaced as byte
+(515 missing values generated)
+
+. bysort hplteacherkey: keep if _n==1;
+(564 observations deleted)
+
+. cap rename c3 deg_y2;
+
+. rename apf_code apfschoolcode;
+
+. keep apfschoolcode  hplteacherkey deg_y2;
+
+. sort apfschoolcode;
+
+. save data\dta\teacher_class_y2_for_table_1B, replace;
+(note: file data\dta\teacher_class_y2_for_table_1B.dta not found)
+file data\dta\teacher_class_y2_for_table_1B.dta saved
+
+. **merging treatment for table 1 (B);
+. *merging y2 teacher_class with school_treatment;
+. use data\dta\teacher_class_y2_for_table_1B;
+
+. merge apfschoolcode using data\dta\apf_treatmentcode;
+(note: you are using old merge syntax; see [R] merge for new syntax)
+variable apfschoolcode does not uniquely identify observations in the master data
+apfschoolcode was long now double
+
+. tab _m;
+
+     _merge |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          1 |         12        0.78        0.78
+          2 |        501       32.70       33.49
+          3 |      1,019       66.51      100.00
+------------+-----------------------------------
+      Total |      1,532      100.00
+
+. do stata\create_int_umc.do;
+
+. #delimit ;
+delimiter now ;
+. **Date: Februrary 18, 2008;
+. **description: this file creates mandal code;
+. cap drop U_MC;
+
+. cap gen U_MC=int(apfschoolcode/100);
+
+. cap gen U_MC=int(apf_code/100);
+
+. cap gen U_MC=int(apf_school_code/100);
+
+. 
+end of do-file
+
+. drop if U_MC==112;
+(12 observations deleted)
+
+. cap rename treatment_code school_treatment;
+
+. **Creating treatment dummys for balanced attrtition and turnover regression**;
+. tabulate school_treatment, gen(treatment);
+
+  Treatment |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          1 |        339       22.30       22.30
+          2 |        100        6.58       28.88
+          3 |        100        6.58       35.46
+          4 |        334       21.97       57.43
+          5 |        347       22.83       80.26
+          6 |        100        6.58       86.84
+          7 |        100        6.58       93.42
+          8 |        100        6.58      100.00
+------------+-----------------------------------
+      Total |      1,520      100.00
+
+. gen II=treatment5;
+
+. gen GI=treatment4;
+
+. cap rename tre_code school_treatment;
+
+. **for the 1 , 4 ,5 version we are dropping all treatments except 1 , 4 and 5;
+. drop if _m==2;
+(501 observations deleted)
+
+. drop _m;
+
+. drop if school_treatment==2 | school_treatment==3 | school_treatment==6 | school_treatment==7;
+(0 observations deleted)
+
+. drop treatment2 treatment3 treatment6 treatment7;
+
+. sort hplteacherkey;
+
+. save data\dta\teacher_class_y2_for_table_1B, replace;
+file data\dta\teacher_class_y2_for_table_1B.dta saved
+
+. keep apfschoolcode hplteacherkey deg_y2 school_treatment;
+
+. rename school_treatment Treatment;
+
+. sort hplteacherkey;
+
+. save data\dta\temp1.dta, replace;
+file data\dta\temp1.dta saved
+
+. use data\dta\teacher_class_y1.dta, clear;
+
+. do stata\create_int_umc.do;
+
+. #delimit ;
+delimiter now ;
+. **Date: Februrary 18, 2008;
+. **description: this file creates mandal code;
+. cap drop U_MC;
+
+. cap gen U_MC=int(apfschoolcode/100);
+
+. cap gen U_MC=int(apf_code/100);
+
+. cap gen U_MC=int(apf_school_code/100);
+
+. 
+end of do-file
+
+. drop if U_MC==112;
+(17 observations deleted)
+
+. rename treatment Treatment;
+
+. rename p_a_e P_A_E;
+
+. rename p_a_b P_A_B;
+
+. rename p_t P_T;
+
+. rename gt GT;
+
+. ren t_d1 T_D1;
+
+. ren t_d2 T_D2;
+
+. ren t_d3 T_D3;
+
+. ren t_d4 T_D4;
+
+. ren t_d5 T_D5;
+
+. rename teacher_code Teacher_Code;
+
+. drop if hplteacherkey=="NULL";
+(1 observation deleted)
+
+. destring hplteacherkey, replace;
+hplteacherkey has all characters numeric; replaced as long
+
+. rename apf_school_code apfschoolcode;
+
+. foreach var of varlist P_A_E P_A_B P_T GT {;
+  2. cap replace `var'="" if `var'=="NULL";
+  3. cap destring `var' , replace;
+  4. };
+
+. keep if inlist(Treatment,1,4,5);
+(0 observations deleted)
+
+. sort Teacher_Code;
+
+. sort hplteacherkey;
+
+. merge hplteacherkey using data\dta\temp1.dta, update;
+(note: you are using old merge syntax; see [R] merge for new syntax)
+apfschoolcode was long now double
+
+. tab _m;
+
+     _merge |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          1 |        498       32.83       32.83
+          2 |        114        7.51       40.34
+          3 |        905       59.66      100.00
+------------+-----------------------------------
+      Total |      1,517      100.00
+
+. *****************YEAR 2 OVER YEAR 1*****************;
+. **generating present at beginning of the year, end of year and through the year for year 2 in comparison to year 1;
+. **teachers at the end of year 1 are also teachers at the beginning of year 2;
+. gen P_A_B_Y2_Y1=P_A_E;
+(114 missing values generated)
+
+. **teachers who have stayed through year 2 are teachers who are in BOTH KM's and VA's file and may or may not be there at the start
+>  of the project year 0 but are defintiely there in the beginnng of year 2 (end of year 1);
+. gen P_T_Y2_Y1=1 if _m==3 & P_A_B_Y2_Y1==1;
+(629 missing values generated)
+
+. **teachers there at the end of year 2 are teachers who are either there from the start of year 2 to the end of year 2 (P_T_Y2_Y1=1
+> ) OR teachers who are only there in the year 2 file;
+. gen P_A_E_Y2_Y1=1 if P_T_Y2_Y1==1 | _m==2;
+(515 missing values generated)
+
+. **we need to also consider where we put zeros;
+. **since we are only considering y2 over y1 for this part we don't want zeros for ALL teachers in this master file;
+. **we would like blanks if the teachers came in year 0 and left;
+. **we replace teacher_throughout_y1_y2=0 if the teacher
+> **IS there at the END of year 1 but not at the end of year 2 ;
+. replace P_T_Y2_Y1=0 if _m==1 & P_A_E==1;
+(136 real changes made)
+
+.  **we also replaced teacher y2 y1 throughout = 0 if teacher is there in the end of year 2 but was not there from year 1 end to yea
+> r 2 end;
+. replace P_T_Y2_Y1=0 if  _m==2;
+(114 real changes made)
+
+. **for zero at the end of year 2 we do the following;
+. replace P_A_E_Y2_Y1=0 if P_A_B_Y2_Y1==1 & P_T_Y2_Y1!=1;
+(136 real changes made)
+
+. **************YEAR 2 OVER YEAR 0*************;
+. **generating present at beginning of the year, end of year and through the year for year 2 in comparison to year 0;
+. **teachers at the beginning of the project year 0;
+. gen P_A_B_Y2_Y0=P_A_B;
+(114 missing values generated)
+
+. **teachers who have stayed through 2 years of the whole project are teachers who are in BOTH KM's and VA's file and who did not le
+> ave and comeback;
+. gen P_T_Y2_Y0=1 if _m==3 & P_T==1 ;
+(922 missing values generated)
+
+. **teachers there at the end of year 2 are teachers who are either there through out (_m==3) OR teachers who are only there in the 
+> year 2 file;
+. gen P_A_E_Y2_Y0=1 if _m==3 | _m==2;
+(498 missing values generated)
+
+. **we need to also consider where we put zeros;
+. **since we are considering y2 over y0 for this part if a teacher is not there for BOTH periods y0 t0 y1 and y1 to y2 we can give t
+> hem a zero;
+. replace P_T_Y2_Y0=0 if P_T_Y2_Y0!=1;
+(922 real changes made)
+
+. **for zero at the end of year 2 we do the following: they should have zero for being present at the end if they were present in th
+> e beginning and NOT present throughout;
+. replace P_A_E_Y2_Y0=0 if P_A_B_Y2_Y0==1 & P_T_Y2_Y0!=1;
+(408 real changes made)
+
+. **We do not need treatments 2 and 3 (BG and VV);
+. drop if T_D2==1 | T_D3==1;
+(0 observations deleted)
+
+. **replacing G_T when it is blank;
+. replace GT=1 if deg_y2==1 & GT==. | deg_y2==2 & GT==.;
+(21 real changes made)
+
+. replace GT=0 if deg_y2!=1 & deg_y2!=2 & GT==.;
+(93 real changes made)
+
+. **teacher turnover and attrition;
+. bysort Treatment: egen P_T_no=sum(P_T) if GT==1;
+(319 missing values generated)
+
+. bysort Treatment: egen P_A_B_no=sum(P_A_B) if GT==1;
+(319 missing values generated)
+
+. bysort Treatment: egen P_A_E_no=sum(P_A_E) if GT==1;
+(319 missing values generated)
+
+. bysort Treatment: egen P_T_Y2_Y1_no=sum(P_T_Y2_Y1) if GT==1;
+(319 missing values generated)
+
+. bysort Treatment: egen P_A_B_Y2_Y1_no=sum(P_A_B_Y2_Y1) if GT==1;
+(319 missing values generated)
+
+. bysort Treatment: egen P_A_E_Y2_Y1_no=sum(P_A_E_Y2_Y1) if GT==1;
+(319 missing values generated)
+
+. bysort Treatment: egen P_T_Y2_Y0_no=sum(P_T_Y2_Y0) if GT==1;
+(319 missing values generated)
+
+. bysort Treatment: egen P_A_B_Y2_Y0_no=sum(P_A_B_Y2_Y0) if GT==1;
+(319 missing values generated)
+
+. bysort Treatment: egen P_A_E_Y2_Y0_no=sum(P_A_E_Y2_Y0) if GT==1;
+(319 missing values generated)
+
+. **y1 on y0;
+. gen teacher_attrition_y1_y0=.;
+(1517 missing values generated)
+
+. gen teacher_turnover_y1_y0=.;
+(1517 missing values generated)
+
+. foreach num of numlist 1 4 5 {;
+  2. replace teacher_attrition_y1_y0=P_T_no/P_A_B_no if Treatment==`num';
+  3. replace teacher_turnover_y1_y0=P_T_no/P_A_E_no if Treatment==`num';
+  4. };
+(387 real changes made)
+(387 real changes made)
+(399 real changes made)
+(399 real changes made)
+(412 real changes made)
+(412 real changes made)
+
+. **y2 on y1;
+. gen teacher_attrition_y2_y1=.;
+(1517 missing values generated)
+
+. gen teacher_turnover_y2_y1=.;
+(1517 missing values generated)
+
+. foreach num of numlist 1 4 5 {;
+  2. replace teacher_attrition_y2_y1=P_T_Y2_Y1_no/P_A_B_Y2_Y1_no if Treatment==`num';
+  3. replace teacher_turnover_y2_y1=P_T_Y2_Y1_no/P_A_E_Y2_Y1_no if Treatment==`num';
+  4. };
+(387 real changes made)
+(387 real changes made)
+(399 real changes made)
+(399 real changes made)
+(412 real changes made)
+(412 real changes made)
+
+. **y2 on y0;
+. gen teacher_attrition_y2_y0=.;
+(1517 missing values generated)
+
+. gen teacher_turnover_y2_y0=.;
+(1517 missing values generated)
+
+. foreach num of numlist 1 4 5 {;
+  2. replace teacher_attrition_y2_y0=P_T_Y2_Y0_no/P_A_B_Y2_Y0_no if Treatment==`num';
+  3. replace teacher_turnover_y2_y0=P_T_Y2_Y0_no/P_A_E_Y2_Y0_no if Treatment==`num';
+  4. };
+(387 real changes made)
+(387 real changes made)
+(399 real changes made)
+(399 real changes made)
+(412 real changes made)
+(412 real changes made)
+
+. save data\dta\temp2.dta, replace;
+(note: file data\dta\temp2.dta not found)
+file data\dta\temp2.dta saved
+
+. drop if GT==0;
+(319 observations deleted)
+
+. bysort Treatment: keep if _n==1;
+(1195 observations deleted)
+
+. list Treatment teacher_attrition* teacher_turnover*;
+
+     +----------------------------------------------------------------------------+
+     | Treatm~t   ~n_y1_y0   ~n_y2_y1   ~n_y2_y0   ~r_y1_y0   ~r_y2_y1   ~r_y2_y0 |
+     |----------------------------------------------------------------------------|
+  1. |        1   .6978417   .9254237    .647482   .6576271          1   .6569343 |
+  2. |        4   .6597222   .9370629   .6215278   .6643357   .9571428   .6370107 |
+  3. |        5   .6966667   .9315961   .6633334   .6807818   .9694915   .6700337 |
+     +----------------------------------------------------------------------------+
+
+. clear;
+
+. use data\dta\temp2.dta;
+
+. **recreating treatment dummies;
+. drop T_D*;
+
+. gen T_D1=Treatment==1;
+
+. gen T_D4=Treatment==4;
+
+. gen T_D5=Treatment==5;
+
+. ***regressions;
+. **year 1 on year 0;
+. **attrition;
+. reg  P_T  T_D1 T_D4 T_D5 if  GT==1 & P_A_B==1 & (Treatment==1|Treatment ==4|Treatment ==5), nocons;
+
+      Source |       SS       df       MS              Number of obs =     866
+-------------+------------------------------           F(  3,   863) =  626.18
+       Model |  406.331851     3   135.44395           Prob > F      =  0.0000
+    Residual |  186.668149   863  .216301448           R-squared     =  0.6852
+-------------+------------------------------           Adj R-squared =  0.6841
+       Total |         593   866  .684757506           Root MSE      =  .46508
+
+------------------------------------------------------------------------------
+         P_T |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+        T_D1 |   .6978417   .0278938    25.02   0.000     .6430941    .7525893
+        T_D4 |   .6597222   .0274052    24.07   0.000     .6059335    .7135109
+        T_D5 |   .6966667   .0268515    25.95   0.000     .6439647    .7493686
+------------------------------------------------------------------------------
+
+. test T_D1=T_D4=T_D5;
+
+ ( 1)  T_D1 - T_D4 = 0
+ ( 2)  T_D1 - T_D5 = 0
+
+       F(  2,   863) =    0.63
+            Prob > F =    0.5352
+
+. **turnover;
+. reg  P_T  T_D1 T_D4 T_D5 if  GT==1 & P_A_E==1 & (Treatment==1|Treatment ==4|Treatment ==5), nocons;
+
+      Source |       SS       df       MS              Number of obs =     888
+-------------+------------------------------           F(  3,   885) =  593.39
+       Model |  396.086825     3  132.028942           Prob > F      =  0.0000
+    Residual |  196.913175   885  .222500763           R-squared     =  0.6679
+-------------+------------------------------           Adj R-squared =  0.6668
+       Total |         593   888  .667792793           Root MSE      =   .4717
+
+------------------------------------------------------------------------------
+         P_T |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+        T_D1 |   .6576271   .0274634    23.95   0.000     .6037261    .7115282
+        T_D4 |   .6643357   .0278922    23.82   0.000     .6095931    .7190782
+        T_D5 |   .6807818   .0269213    25.29   0.000     .6279447    .7336189
+------------------------------------------------------------------------------
+
+. test T_D1=T_D4=T_D5;
+
+ ( 1)  T_D1 - T_D4 = 0
+ ( 2)  T_D1 - T_D5 = 0
+
+       F(  2,   885) =    0.19
+            Prob > F =    0.8249
+
+. **year 2 on year 0;
+. **attrition;
+. reg  P_T_Y2_Y0  T_D1 T_D4 T_D5 if  GT==1 & P_A_B_Y2_Y0==1 & (Treatment==1|Treatment==4|Treatment==5), nocons;
+
+      Source |       SS       df       MS              Number of obs =     866
+-------------+------------------------------           F(  3,   863) =  522.23
+       Model |  359.803568     3  119.934523           Prob > F      =  0.0000
+    Residual |  198.196432   863  .229659828           R-squared     =  0.6448
+-------------+------------------------------           Adj R-squared =  0.6436
+       Total |         558   866  .644341801           Root MSE      =  .47923
+
+------------------------------------------------------------------------------
+   P_T_Y2_Y0 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+        T_D1 |    .647482   .0287422    22.53   0.000     .5910692    .7038948
+        T_D4 |   .6215278   .0282388    22.01   0.000      .566103    .6769525
+        T_D5 |   .6633333   .0276683    23.97   0.000     .6090284    .7176383
+------------------------------------------------------------------------------
+
+. test T_D1=T_D4=T_D5;
+
+ ( 1)  T_D1 - T_D4 = 0
+ ( 2)  T_D1 - T_D5 = 0
+
+       F(  2,   863) =    0.57
+            Prob > F =    0.5669
+
+. **turnover;
+. reg  P_T_Y2_Y0  T_D1 T_D4 T_D5 if  GT==1 & P_A_E_Y2_Y0==1 & (Treatment==1|Treatment==4|Treatment==5), nocons;
+
+      Source |       SS       df       MS              Number of obs =     852
+-------------+------------------------------           F(  3,   849) =  537.80
+       Model |  365.609787     3  121.869929           Prob > F      =  0.0000
+    Residual |  192.390213   849  .226608025           R-squared     =  0.6552
+-------------+------------------------------           Adj R-squared =  0.6540
+       Total |         558   852  .654929577           Root MSE      =  .47603
+
+------------------------------------------------------------------------------
+   P_T_Y2_Y0 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+        T_D1 |   .6569343   .0287582    22.84   0.000     .6004887    .7133799
+        T_D4 |   .6370107   .0283978    22.43   0.000     .5812726    .6927488
+        T_D5 |   .6700337   .0276223    24.26   0.000     .6158177    .7242496
+------------------------------------------------------------------------------
+
+. test T_D1=T_D4=T_D5;
+
+ ( 1)  T_D1 - T_D4 = 0
+ ( 2)  T_D1 - T_D5 = 0
+
+       F(  2,   849) =    0.35
+            Prob > F =    0.7041
+
+. log close;
+      name:  <unnamed>
+       log:  c:\JPE\stata\\logs\\Incentives_JPE_table1B.txt
+  log type:  text
+ closed on:   8 Feb 2011, 13:22:00
+------------------------------------------------------------------------------------------------------------------------------------

@@ -1,0 +1,19 @@
+* Potential Outcomes 
+- Potential Outcom: [define] 
+* Average Treatment Effects 
+- We have the concept of $\tau_{i}$, the difference between $Y_{i}(1)$ and $Y_{i}(0)$.
+  - Is this a concept that /actually/ exists?
+    - If it exists, does it exist at the indiviudal level or only at a group level? 
+  - Is this a concept that is /actually/ measurable?
+- Summary of Box 2.1
+  - 
+  - 
+  - 
+- How could you write equation 2.2 with an `ifelse()` statement?  
+* Random Sampling and Expectations 
+* Random Assignment and Unbiased Inference
+* Mechanics of Random Assignment 
+* Threat of Selection Bias without Random Assignment 
+* Assumptions for Experiments
+** Excludability 
+** Non-Interference 

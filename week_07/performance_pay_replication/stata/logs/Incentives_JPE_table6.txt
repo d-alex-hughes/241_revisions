@@ -1,0 +1,855 @@
+------------------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  c:\JPE\stata\\logs\\Incentives_JPE_table6.txt
+  log type:  text
+ opened on:   8 Feb 2011, 13:25:28
+
+. use data\dta\Incentives_JPE_analysis_starter_file.dta, clear;
+
+. preserve;
+
+. bysort hplstudentkey sub : keep if _n==1;
+(96992 observations deleted)
+
+. drop level;
+
+. drop y2_nts_sub_mean y1_nts_sub_mean y0_nts_sub_mean;
+
+. **reshaping file to make it wide on subject;
+. keep hplstudentkey sub y1_nts_evs_sc y1_nts_evs_ss y2_nts_evs_sc y2_nts_evs_ss y0_nts school_treatment U_MC apfschoolcode incentiv
+> e GI cheaters;
+
+. reshape wide y0_nts, i(hplstudentkey) j(sub);
+(note: j = 1 2)
+
+Data                               long   ->   wide
+-----------------------------------------------------------------------------
+Number of obs.                    96992   ->   48496
+Number of variables                  13   ->      13
+j variable (2 values)               sub   ->   (dropped)
+xij variables:
+                                 y0_nts   ->   y0_nts1 y0_nts2
+-----------------------------------------------------------------------------
+
+. foreach var in  y0_nts  {;
+  2. rename `var'1 `var'_maths;
+  3. rename `var'2 `var'_telugu;
+  4. };
+
+. save data\dta\Incentives_JPE_table6_panelA_INT.dta, replace;
+(note: file data\dta\Incentives_JPE_table6_panelA_INT.dta not found)
+file data\dta\Incentives_JPE_table6_panelA_INT.dta saved
+
+. **PANEL A;
+. **y1 on y0;
+. areg  y1_nts_evs_sc y0_nts_maths y0_nts_telugu incentive if inlist(school_treatment,1,4,5) , absorb(U_MC) cluster(apfschoolcode);
+
+Linear regression, absorbing indicators                Number of obs =   11786
+                                                       F(  3,   297) =  210.78
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2586
+                                                       Adj R-squared =  0.2553
+                                                       Root MSE      =   .8345
+
+                        (Std. Err. adjusted for 298 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+y1_nts_evs~c |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+y0_nts_maths |   .2147901   .0189575    11.33   0.000      .177482    .2520981
+y0_nts_tel~u |   .2089059   .0190051    10.99   0.000     .1715042    .2463076
+   incentive |   .1115717   .0522571     2.14   0.034     .0087307    .2144128
+       _cons |  -.0598291   .0392928    -1.52   0.129    -.1371566    .0174984
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+
+. estimates store evs_sc1;
+
+. areg  y1_nts_evs_ss y0_nts_maths y0_nts_telugu incentive if inlist(school_treatment,1,4,5) , absorb(U_MC) cluster(apfschoolcode);
+
+Linear regression, absorbing indicators                Number of obs =   11786
+                                                       F(  3,   297) =  294.79
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.3073
+                                                       Adj R-squared =  0.3043
+                                                       Root MSE      =  .84632
+
+                        (Std. Err. adjusted for 298 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+y1_nts_evs~s |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+y0_nts_maths |   .2240623   .0177122    12.65   0.000     .1892049    .2589197
+y0_nts_tel~u |   .2885777   .0191391    15.08   0.000     .2509122    .3262432
+   incentive |   .1410578    .047863     2.95   0.003     .0468642    .2352515
+       _cons |  -.0182622   .0344316    -0.53   0.596    -.0860232    .0494987
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+
+. estimates store evs_ss1;
+
+. **y2 on y0;
+. areg  y2_nts_evs_sc y0_nts_maths y0_nts_telugu incentive if inlist(school_treatment,1,4,5) & cheaters==0 , absorb(U_MC) cluster(ap
+> fschoolcode);
+
+Linear regression, absorbing indicators                Number of obs =    9143
+                                                       F(  3,   296) =  169.24
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.1857
+                                                       Adj R-squared =  0.1810
+                                                       Root MSE      =  .92326
+
+                        (Std. Err. adjusted for 297 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+y2_nts_evs~c |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+y0_nts_maths |   .1559172   .0227798     6.84   0.000     .1110863    .2007481
+y0_nts_tel~u |   .2175951   .0237163     9.17   0.000     .1709212    .2642691
+   incentive |   .1130723   .0444411     2.54   0.011     .0256117     .200533
+       _cons |   -.051444   .0305306    -1.68   0.093    -.1115285    .0086406
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+
+. estimates store evs_sc2;
+
+. areg  y2_nts_evs_ss y0_nts_maths y0_nts_telugu incentive if inlist(school_treatment,1,4,5) & cheaters==0 , absorb(U_MC) cluster(ap
+> fschoolcode);
+
+Linear regression, absorbing indicators                Number of obs =    9143
+                                                       F(  3,   296) =  147.01
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.1798
+                                                       Adj R-squared =  0.1751
+                                                       Root MSE      =  .95976
+
+                        (Std. Err. adjusted for 297 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+y2_nts_evs~s |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+y0_nts_maths |   .1671393   .0235741     7.09   0.000     .1207452    .2135334
+y0_nts_tel~u |   .1885095   .0243002     7.76   0.000     .1406864    .2363326
+   incentive |   .1804469   .0497197     3.63   0.000     .0825981    .2782958
+       _cons |  -.0645919   .0361959    -1.78   0.075    -.1358259     .006642
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+
+. estimates store evs_ss2;
+
+. estout evs_sc1 evs_ss1 evs_sc2 evs_ss2,stats(N r2)  cells(b(fmt(3) star) se(par fmt(3)))starlevels(* 0.10 ** 0.05 *** .01 );
+
+----------------------------------------------------------------------------
+                  evs_sc1         evs_ss1         evs_sc2         evs_ss2   
+                     b/se            b/se            b/se            b/se   
+----------------------------------------------------------------------------
+y0_nts_maths        0.215***        0.224***        0.156***        0.167***
+                  (0.019)         (0.018)         (0.023)         (0.024)   
+y0_nts_tel~u        0.209***        0.289***        0.218***        0.189***
+                  (0.019)         (0.019)         (0.024)         (0.024)   
+incentive           0.112**         0.141***        0.113**         0.180***
+                  (0.052)         (0.048)         (0.044)         (0.050)   
+_cons              -0.060          -0.018          -0.051*         -0.065*  
+                  (0.039)         (0.034)         (0.031)         (0.036)   
+----------------------------------------------------------------------------
+N               11786.000       11786.000        9143.000        9143.000   
+r2                  0.259           0.307           0.186           0.180   
+----------------------------------------------------------------------------
+
+. restore;
+
+. **PANEL B;
+. **Reducing the file to one observation per student per subject per year, i.e. removing the level variables;
+. bysort hplstudentkey sub : keep if _n==1;
+(96992 observations deleted)
+
+. drop level;
+
+. drop y2_nts_sub_mean y1_nts_sub_mean y0_nts_sub_mean;
+
+. keep y1_nts_level_mean y2_nts_level_mean y0_nts  y2_nts_evs y2_nts_evs_sc y2_nts_evs_ss incentive input II GI VV BG control infra_
+> index_mean prox_index_mean  y1_nts_level_mean y2_nts_level_mean y1_nts_evs_sc y1_nts_evs_ss  prox_index_y1 infra_index_y1 prox_ind
+> ex_y2 infra_index_y2  Male SC ST OBC hh_affluence_index parent_literacy_index hplstudentkey class* apfschoolcode  school_treatment
+>  U_MC* sub cheaters;
+
+. **reshaping file to make it wide on subject;
+. reshape wide y0_nts y1_nts_level_mean y2_nts_level_mean, i(hplstudentkey) j(sub);
+(note: j = 1 2)
+
+Data                               long   ->   wide
+-----------------------------------------------------------------------------
+Number of obs.                    96992   ->   48496
+Number of variables                  36   ->      38
+j variable (2 values)               sub   ->   (dropped)
+xij variables:
+                                 y0_nts   ->   y0_nts1 y0_nts2
+                      y1_nts_level_mean   ->   y1_nts_level_mean1 y1_nts_level_mean2
+                      y2_nts_level_mean   ->   y2_nts_level_mean1 y2_nts_level_mean2
+-----------------------------------------------------------------------------
+
+. foreach var in  y0_nts  y1_nts_level_mean  y2_nts_level_mean {;
+  2. rename `var'1 `var'_maths;
+  3. rename `var'2 `var'_telugu;
+  4. };
+
+. drop class_y0;
+
+. **reshaping file to make it long on year;
+. forvalues i=1/2 {;
+  2. rename y`i'_nts_evs_sc nts_evs_sc`i';
+  3. rename y`i'_nts_evs_ss nts_evs_ss`i';
+  4. rename y`i'_nts_level_mean_maths nts_level_mean_maths`i';
+  5. rename y`i'_nts_level_mean_telugu nts_level_mean_telugu`i';
+  6. rename class_y`i' class`i';
+  7. rename prox_index_y`i' prox_index`i';
+  8.  rename infra_index_y`i' infra_index`i';
+  9. };
+
+. reshape long nts_evs_sc nts_evs_ss nts_level_mean_maths nts_level_mean_telugu class prox_index infra_index, i(hplstudentkey) j(yea
+> r);
+(note: j = 1 2)
+
+Data                               wide   ->   long
+-----------------------------------------------------------------------------
+Number of obs.                    48496   ->   96992
+Number of variables                  37   ->      31
+j variable (2 values)                     ->   year
+xij variables:
+                nts_evs_sc1 nts_evs_sc2   ->   nts_evs_sc
+                nts_evs_ss1 nts_evs_ss2   ->   nts_evs_ss
+nts_level_mean_maths1 nts_level_mean_maths2->  nts_level_mean_maths
+nts_level_mean_telugu1 nts_level_mean_telugu2->nts_level_mean_telugu
+                          class1 class2   ->   class
+                prox_index1 prox_index2   ->   prox_index
+              infra_index1 infra_index2   ->   infra_index
+-----------------------------------------------------------------------------
+
+. tsset hplstudentkey year;
+       panel variable:  hplstudentkey (strongly balanced)
+        time variable:  year, 1 to 2
+                delta:  1 unit
+
+. gen lag_nts_level_mean_maths=l.nts_level_mean_maths;
+(64049 missing values generated)
+
+. gen lag_nts_level_mean_telugu=l.nts_level_mean_telugu;
+(64014 missing values generated)
+
+. tab U_MC, gen(U_MC);
+
+     unique |
+mandal code |      Freq.     Percent        Cum.
+------------+-----------------------------------
+        117 |      1,508        1.55        1.55
+        120 |      2,430        2.51        4.06
+        121 |      2,300        2.37        6.43
+        132 |      1,030        1.06        7.49
+        133 |      1,240        1.28        8.77
+        134 |      1,224        1.26       10.03
+        136 |      1,588        1.64       11.67
+        138 |      2,826        2.91       14.58
+        140 |      2,088        2.15       16.74
+        141 |      1,702        1.75       18.49
+        232 |      2,240        2.31       20.80
+        236 |      1,856        1.91       22.72
+        237 |      1,684        1.74       24.45
+        238 |      1,720        1.77       26.22
+        239 |      1,588        1.64       27.86
+        241 |      1,992        2.05       29.92
+        242 |      2,448        2.52       32.44
+        243 |      1,506        1.55       33.99
+        244 |      1,622        1.67       35.66
+        245 |      1,984        2.05       37.71
+        301 |      1,366        1.41       39.12
+        302 |      1,332        1.37       40.49
+        304 |      1,454        1.50       41.99
+        305 |      1,174        1.21       43.20
+        315 |      2,314        2.39       45.59
+        317 |      1,396        1.44       47.03
+        318 |      1,752        1.81       48.83
+        319 |      1,358        1.40       50.23
+        320 |      1,824        1.88       52.11
+        324 |      1,902        1.96       54.07
+        415 |      2,936        3.03       57.10
+        416 |      2,212        2.28       59.38
+        417 |      2,556        2.64       62.02
+        418 |      2,156        2.22       64.24
+        419 |      2,920        3.01       67.25
+        420 |      1,752        1.81       69.06
+        421 |      2,776        2.86       71.92
+        422 |      2,534        2.61       74.53
+        444 |      2,286        2.36       76.89
+        445 |      2,080        2.14       79.03
+        506 |      2,524        2.60       81.64
+        507 |      1,494        1.54       83.18
+        508 |      1,346        1.39       84.56
+        522 |      1,584        1.63       86.20
+        523 |      2,842        2.93       89.13
+        525 |      2,894        2.98       92.11
+        533 |      2,508        2.59       94.70
+        534 |      2,064        2.13       96.82
+        535 |      1,278        1.32       98.14
+        536 |      1,802        1.86      100.00
+------------+-----------------------------------
+      Total |     96,992      100.00
+
+. replace cheaters=0 if year==1;
+(286 real changes made)
+
+. save data\dta\Incentives_JPE_table6_panelB_INT.dta, replace;
+(note: file data\dta\Incentives_JPE_table6_panelB_INT.dta not found)
+file data\dta\Incentives_JPE_table6_panelB_INT.dta saved
+
+. **step 1 : generate predicted maths and language scores for all schools from a regression of y1 scores on y0 scores for just the c
+> ontrol schools;
+. **YEAR 1;
+. quietly : reg nts_level_mean_maths y0_nts_maths prox_index infra_index  Male SC ST OBC parent_literacy_index hh_affluence_index U_
+> MC1 - U_MC50  if inlist(school_treatment,1) & year==1 ,  cluster(apfschoolcode);
+
+. predict nts_level_mean_mat_pred_y1 if year==1 , xb;
+(74205 missing values generated)
+
+. predict nts_level_mean_mat_resid_y1 if year==1, residuals;
+(78292 missing values generated)
+
+. quietly : reg nts_level_mean_telugu y0_nts_telugu prox_index infra_index  Male SC ST OBC parent_literacy_index hh_affluence_index 
+> U_MC1 - U_MC50  if inlist(school_treatment,1) & year==1 ,  cluster(apfschoolcode);
+
+. predict nts_level_mean_tel_pred_y1 if year==1, xb;
+(73914 missing values generated)
+
+. predict nts_level_mean_tel_resid_y1 if year==1, residuals;
+(78075 missing values generated)
+
+. **YEAR 2;
+. quietly : reg nts_level_mean_maths y0_nts_maths prox_index infra_index Male SC ST OBC parent_literacy_index hh_affluence_index U_M
+> C1 - U_MC50 if inlist(school_treatment,1) & year==2 & cheaters==0, cluster(apfschoolcode);
+
+. predict nts_level_mean_mat_pred_y2 if year==2, xb;
+(73730 missing values generated)
+
+. predict nts_level_mean_mat_resid_y2 if year==2, residuals;
+(84354 missing values generated)
+
+. quietly : reg nts_level_mean_telugu y0_nts_telugu prox_index infra_index  Male SC ST OBC parent_literacy_index hh_affluence_index 
+> U_MC1 - U_MC50  if inlist(school_treatment,1) & year==2 & cheaters==0,  cluster(apfschoolcode);
+
+. predict nts_level_mean_tel_pred_y2 if year==2, xb;
+(73421 missing values generated)
+
+. predict nts_level_mean_tel_resid_y2 if year==2, residuals;
+(84193 missing values generated)
+
+. foreach sub in mat tel {;
+  2. gen nts_level_mean_`sub'_pred=nts_level_mean_`sub'_pred_y1 if year==1;
+  3. replace  nts_level_mean_`sub'_pred=nts_level_mean_`sub'_pred_y2 if year==2;
+  4. gen nts_level_mean_`sub'_resid=nts_level_mean_`sub'_resid_y1 if year==1;
+  5. replace  nts_level_mean_`sub'_resid=nts_level_mean_`sub'_resid_y2 if year==2;
+  6. };
+(74205 missing values generated)
+(23262 real changes made)
+(78292 missing values generated)
+(12638 real changes made)
+(73914 missing values generated)
+(23571 real changes made)
+(78075 missing values generated)
+(12799 real changes made)
+
+. **step 2 : regress the evs scores on these predicted scores , the residual scores, ;
+. **(1). Are the spillovers for science / social science larger from gains in math or from gains in reading;
+. **year 1 and year 2 combined science;
+. areg nts_evs_sc nts_level_mean_mat_pred nts_level_mean_tel_pred nts_level_mean_mat_resid nts_level_mean_tel_resid if inlist(school
+> _treatment,1), absorb(U_MC) cluster(apfschoolcode);
+
+Linear regression, absorbing indicators                Number of obs =    6874
+                                                       F(  4,    99) =  567.50
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.4466
+                                                       Adj R-squared =  0.4423
+                                                       Root MSE      =  .72018
+
+                        (Std. Err. adjusted for 100 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+  nts_evs_sc |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+nts_l~t_pred |   .3976895   .0438416     9.07   0.000     .3106983    .4846807
+nts_l~l_pred |   .3763933   .0401599     9.37   0.000     .2967074    .4560792
+nts_~t_resid |   .2840736   .0225255    12.61   0.000     .2393781    .3287692
+nts_~l_resid |   .3544647   .0204627    17.32   0.000     .3138623    .3950672
+       _cons |  -.0272448   .0088183    -3.09   0.003    -.0447422   -.0097474
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+
+.  **year 1 and year 2 combined social science;
+. areg nts_evs_ss nts_level_mean_mat_pred nts_level_mean_tel_pred nts_level_mean_mat_resid nts_level_mean_tel_resid if inlist(school
+> _treatment,1), absorb(U_MC) cluster(apfschoolcode);
+
+Linear regression, absorbing indicators                Number of obs =    6874
+                                                       F(  4,    99) =  584.76
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.4643
+                                                       Adj R-squared =  0.4601
+                                                       Root MSE      =  .72939
+
+                        (Std. Err. adjusted for 100 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+  nts_evs_ss |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+nts_l~t_pred |   .4273236   .0450846     9.48   0.000     .3378659    .5167812
+nts_l~l_pred |   .4241731   .0412043    10.29   0.000     .3424148    .5059314
+nts_~t_resid |   .2731487   .0191158    14.29   0.000     .2352187    .3110786
+nts_~l_resid |   .3684201   .0197469    18.66   0.000     .3292379    .4076023
+       _cons |  -.0080533   .0082924    -0.97   0.334    -.0245071    .0084005
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+
+.   **year 1 science;
+. areg nts_evs_sc nts_level_mean_mat_pred nts_level_mean_tel_pred nts_level_mean_mat_resid nts_level_mean_tel_resid if inlist(school
+> _treatment,1) & year==1, absorb(U_MC) cluster(apfschoolcode);
+
+Linear regression, absorbing indicators                Number of obs =    3846
+                                                       F(  4,    98) =  319.84
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.5197
+                                                       Adj R-squared =  0.5130
+                                                       Root MSE      =  .65664
+
+                         (Std. Err. adjusted for 99 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+  nts_evs_sc |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+nts_l~t_pred |   .3942577   .0466527     8.45   0.000      .301677    .4868384
+nts_l~l_pred |   .3303545    .044157     7.48   0.000     .2427264    .4179827
+nts_~t_resid |    .316621   .0282541    11.21   0.000     .2605518    .3726903
+nts_~l_resid |   .3423007   .0237323    14.42   0.000     .2952048    .3893967
+       _cons |   -.055771   .0113936    -4.89   0.000    -.0783812   -.0331608
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+
+.  **year 1 social science;
+. areg nts_evs_ss nts_level_mean_mat_pred nts_level_mean_tel_pred nts_level_mean_mat_resid nts_level_mean_tel_resid if inlist(school
+> _treatment,1) & year==1, absorb(U_MC) cluster(apfschoolcode);
+
+Linear regression, absorbing indicators                Number of obs =    3846
+                                                       F(  4,    98) =  417.74
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.5757
+                                                       Adj R-squared =  0.5698
+                                                       Root MSE      =  .64573
+
+                         (Std. Err. adjusted for 99 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+  nts_evs_ss |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+nts_l~t_pred |   .3380536   .0429546     7.87   0.000     .2528115    .4232957
+nts_l~l_pred |   .5027768   .0434754    11.56   0.000     .4165011    .5890524
+nts_~t_resid |    .275636   .0276399     9.97   0.000     .2207856    .3304865
+nts_~l_resid |   .4269005   .0263396    16.21   0.000     .3746304    .4791705
+       _cons |  -.0125779   .0110388    -1.14   0.257    -.0344842    .0093283
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+
+.  **year 2 science;
+. areg nts_evs_sc nts_level_mean_mat_pred nts_level_mean_tel_pred nts_level_mean_mat_resid nts_level_mean_tel_resid if inlist(school
+> _treatment,1) & year==2 & cheaters==0, absorb(U_MC) cluster(apfschoolcode);
+
+Linear regression, absorbing indicators                Number of obs =    3028
+                                                       F(  4,    97) =  214.22
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.4200
+                                                       Adj R-squared =  0.4097
+                                                       Root MSE      =  .76273
+
+                         (Std. Err. adjusted for 98 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+  nts_evs_sc |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+nts_l~t_pred |   .2898321   .0678807     4.27   0.000     .1551076    .4245565
+nts_l~l_pred |   .4275591   .0633491     6.75   0.000     .3018288    .5532894
+nts_~t_resid |   .2307948   .0339941     6.79   0.000     .1633259    .2982637
+nts_~l_resid |   .3968088   .0343915    11.54   0.000     .3285512    .4650664
+       _cons |    .008239   .0154844     0.53   0.596    -.0224933    .0389714
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+
+.  **year 2 social science;
+. areg nts_evs_ss nts_level_mean_mat_pred nts_level_mean_tel_pred nts_level_mean_mat_resid nts_level_mean_tel_resid if inlist(school
+> _treatment,1) & year==2 & cheaters==0, absorb(U_MC) cluster(apfschoolcode);
+
+Linear regression, absorbing indicators                Number of obs =    3028
+                                                       F(  4,    97) =  138.80
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.3756
+                                                       Adj R-squared =  0.3645
+                                                       Root MSE      =  .79965
+
+                         (Std. Err. adjusted for 98 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+  nts_evs_ss |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+nts_l~t_pred |   .4370139   .0655026     6.67   0.000     .3070094    .5670185
+nts_l~l_pred |   .3347974   .0657612     5.09   0.000     .2042796    .4653152
+nts_~t_resid |   .2572116   .0367117     7.01   0.000     .1843489    .3300742
+nts_~l_resid |   .3277656   .0372858     8.79   0.000     .2537636    .4017676
+       _cons |  -.0052458   .0144945    -0.36   0.718    -.0340133    .0235217
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+
+. **(2). Are the results in social science  and science being stronger in incentive schools just from direct spill overs of higher m
+> ath and language scores or are they more than just direct spill overs;
+. gen inc_int_mat_pred=incentive*nts_level_mean_mat_pred;
+(50943 missing values generated)
+
+. gen inc_int_tel_pred=incentive*nts_level_mean_tel_pred;
+(50343 missing values generated)
+
+. gen inc_int_mat_resid=incentive*nts_level_mean_mat_resid;
+(65654 missing values generated)
+
+. gen inc_int_tel_resid=incentive*nts_level_mean_tel_resid;
+(65276 missing values generated)
+
+. **WITH INCENTIVE TERMS;
+. **year 1 science  with incentive dummy and incentive interacted with residuals;
+. areg nts_evs_sc nts_level_mean_mat_pred nts_level_mean_tel_pred nts_level_mean_mat_resid nts_level_mean_tel_resid incentive inc_in
+> t_mat_resid inc_int_tel_resid  if year==1 & inlist(school_treatment,1,4,5), absorb(U_MC) cluster(apfschoolcode);
+
+Linear regression, absorbing indicators                Number of obs =   11228
+                                                       F(  7,   291) =  480.56
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.4830
+                                                       Adj R-squared =  0.4804
+                                                       Root MSE      =  .69834
+
+                        (Std. Err. adjusted for 292 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+  nts_evs_sc |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+nts_l~t_pred |   .3821068   .0320256    11.93   0.000     .3190756    .4451381
+nts_l~l_pred |   .2981788    .028214    10.57   0.000     .2426494    .3537082
+nts_~t_resid |   .3189893    .025283    12.62   0.000     .2692285    .3687501
+nts_~l_resid |   .3433127   .0238467    14.40   0.000     .2963788    .3902465
+   incentive |  -.0097891   .0310818    -0.31   0.753    -.0709626    .0513845
+inc_int_m~id |   .0482799   .0347945     1.39   0.166    -.0202008    .1167606
+inc_int_t~id |  -.0063392   .0293422    -0.22   0.829    -.0640891    .0514108
+       _cons |  -.0522239   .0239686    -2.18   0.030    -.0993977   -.0050502
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+
+. estimates store reg1;
+
+. test nts_level_mean_mat_resid=nts_level_mean_tel_resid;
+
+ ( 1)  nts_level_mean_mat_resid - nts_level_mean_tel_resid = 0
+
+       F(  1,   291) =    0.36
+            Prob > F =    0.5477
+
+.  **year 1 social science  with incentive dummy and incentive interacted with residuals;
+. areg nts_evs_ss nts_level_mean_mat_pred nts_level_mean_tel_pred nts_level_mean_mat_resid nts_level_mean_tel_resid incentive inc_in
+> t_mat_resid inc_int_tel_resid  if year==1 & inlist(school_treatment,1,4,5), absorb(U_MC) cluster(apfschoolcode);
+
+Linear regression, absorbing indicators                Number of obs =   11228
+                                                       F(  7,   291) =  642.82
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.5405
+                                                       Adj R-squared =  0.5382
+                                                       Root MSE      =  .69043
+
+                        (Std. Err. adjusted for 292 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+  nts_evs_ss |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+nts_l~t_pred |   .3400546   .0265659    12.80   0.000      .287769    .3923402
+nts_l~l_pred |   .4865243   .0259762    18.73   0.000     .4353993    .5376492
+nts_~t_resid |   .2759938   .0242768    11.37   0.000     .2282134    .3237743
+nts_~l_resid |   .4252852   .0252669    16.83   0.000     .3755561    .4750143
+   incentive |   .0113243   .0274915     0.41   0.681     -.042783    .0654316
+inc_int_m~id |   .0445851   .0314937     1.42   0.158    -.0173992    .1065693
+inc_int_t~id |   .0244045   .0308291     0.79   0.429    -.0362717    .0850807
+       _cons |  -.0089872   .0205243    -0.44   0.662    -.0493821    .0314076
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+
+. estimates store reg2;
+
+. test nts_level_mean_mat_resid=nts_level_mean_tel_resid;
+
+ ( 1)  nts_level_mean_mat_resid - nts_level_mean_tel_resid = 0
+
+       F(  1,   291) =   11.68
+            Prob > F =    0.0007
+
+. **year 2 science  with incentive dummy and incentive interacted with residuals;
+. areg nts_evs_sc nts_level_mean_mat_pred nts_level_mean_tel_pred nts_level_mean_mat_resid nts_level_mean_tel_resid incentive inc_in
+> t_mat_resid inc_int_tel_resid  if year==2 & inlist(school_treatment,1,4,5) & cheaters==0, absorb(U_MC) cluster(apfschoolcode);
+
+Linear regression, absorbing indicators                Number of obs =    8949
+                                                       F(  7,   296) =  302.31
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.4064
+                                                       Adj R-squared =  0.4027
+                                                       Root MSE      =  .78829
+
+                        (Std. Err. adjusted for 297 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+  nts_evs_sc |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+nts_l~t_pred |    .274456   .0405477     6.77   0.000     .1946577    .3542542
+nts_l~l_pred |   .4286525   .0356771    12.01   0.000     .3584397    .4988654
+nts_~t_resid |   .2316694   .0318862     7.27   0.000     .1689169    .2944218
+nts_~l_resid |   .3992821   .0321448    12.42   0.000     .3360208    .4625434
+   incentive |  -.0542057   .0303383    -1.79   0.075    -.1139118    .0055003
+inc_int_m~id |  -.0072716    .038459    -0.19   0.850    -.0829594    .0684162
+inc_int_t~id |     .05845   .0391239     1.49   0.136    -.0185463    .1354462
+       _cons |   .0019307   .0221319     0.09   0.931    -.0416251    .0454865
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+
+. estimates store reg3;
+
+. test nts_level_mean_mat_resid=nts_level_mean_tel_resid;
+
+ ( 1)  nts_level_mean_mat_resid - nts_level_mean_tel_resid = 0
+
+       F(  1,   296) =    9.43
+            Prob > F =    0.0023
+
+.  **year 2 social science  with incentive dummy and incentive interacted with residuals;
+. areg nts_evs_ss nts_level_mean_mat_pred nts_level_mean_tel_pred nts_level_mean_mat_resid nts_level_mean_tel_resid incentive inc_in
+> t_mat_resid inc_int_tel_resid  if year==2 & inlist(school_treatment,1,4,5) & cheaters==0, absorb(U_MC) cluster(apfschoolcode);
+
+Linear regression, absorbing indicators                Number of obs =    8949
+                                                       F(  7,   296) =  226.35
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.3921
+                                                       Adj R-squared =  0.3883
+                                                       Root MSE      =   .8263
+
+                        (Std. Err. adjusted for 297 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+  nts_evs_ss |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+nts_l~t_pred |   .3304443   .0441762     7.48   0.000     .2435051    .4173836
+nts_l~l_pred |   .3600607   .0358463    10.04   0.000     .2895149    .4306066
+nts_~t_resid |    .246511   .0354676     6.95   0.000     .1767104    .3163116
+nts_~l_resid |   .3407756   .0359026     9.49   0.000      .270119    .4114322
+   incentive |   .0089346   .0325924     0.27   0.784    -.0552075    .0730767
+inc_int_m~id |   .0143014   .0424213     0.34   0.736    -.0691842     .097787
+inc_int_t~id |   .0991998   .0426148     2.33   0.021     .0153335    .1830662
+       _cons |  -.0138488   .0242152    -0.57   0.568    -.0615046    .0338071
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+
+. estimates store reg4;
+
+. test nts_level_mean_mat_resid=nts_level_mean_tel_resid;
+
+ ( 1)  nts_level_mean_mat_resid - nts_level_mean_tel_resid = 0
+
+       F(  1,   296) =    2.33
+            Prob > F =    0.1281
+
+. estout reg1 reg2 reg3 reg4 ,stats(N r2)  cells(b(fmt(3) star) se(par  fmt(3)))starlevels(* 0.10 ** 0.05 *** .01 );
+
+----------------------------------------------------------------------------
+                     reg1            reg2            reg3            reg4   
+                     b/se            b/se            b/se            b/se   
+----------------------------------------------------------------------------
+nts_l~t_pred        0.382***        0.340***        0.274***        0.330***
+                  (0.032)         (0.027)         (0.041)         (0.044)   
+nts_l~l_pred        0.298***        0.487***        0.429***        0.360***
+                  (0.028)         (0.026)         (0.036)         (0.036)   
+nts_~t_resid        0.319***        0.276***        0.232***        0.247***
+                  (0.025)         (0.024)         (0.032)         (0.035)   
+nts_~l_resid        0.343***        0.425***        0.399***        0.341***
+                  (0.024)         (0.025)         (0.032)         (0.036)   
+incentive          -0.010           0.011          -0.054*          0.009   
+                  (0.031)         (0.027)         (0.030)         (0.033)   
+inc_int_m~id        0.048           0.045          -0.007           0.014   
+                  (0.035)         (0.031)         (0.038)         (0.042)   
+inc_int_t~id       -0.006           0.024           0.058           0.099** 
+                  (0.029)         (0.031)         (0.039)         (0.043)   
+_cons              -0.052**        -0.009           0.002          -0.014   
+                  (0.024)         (0.021)         (0.022)         (0.024)   
+----------------------------------------------------------------------------
+N               11228.000       11228.000        8949.000        8949.000   
+r2                  0.483           0.540           0.406           0.392   
+----------------------------------------------------------------------------
+
+.   **WITHOUT THE INCENTIVE TERMS;
+. **year 1 science  with incentive dummy and incentive interacted with residuals;
+. areg nts_evs_sc nts_level_mean_mat_pred nts_level_mean_tel_pred nts_level_mean_mat_resid nts_level_mean_tel_resid incentive  if ye
+> ar==1 & inlist(school_treatment,1,4,5), absorb(U_MC) cluster(apfschoolcode);
+
+Linear regression, absorbing indicators                Number of obs =   11228
+                                                       F(  5,   291) =  634.31
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.4827
+                                                       Adj R-squared =  0.4802
+                                                       Root MSE      =  .69845
+
+                        (Std. Err. adjusted for 292 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+  nts_evs_sc |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+nts_l~t_pred |   .3845129   .0322689    11.92   0.000     .3210029    .4480229
+nts_l~l_pred |   .2959976   .0285077    10.38   0.000     .2398902    .3521049
+nts_~t_resid |   .3559504    .021338    16.68   0.000      .313954    .3979468
+nts_~l_resid |   .3380604    .016705    20.24   0.000     .3051825    .3709383
+   incentive |  -.0071442   .0314891    -0.23   0.821    -.0691195    .0548311
+       _cons |  -.0524962   .0241525    -2.17   0.031    -.1000319   -.0049605
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+
+. estimates store reg1;
+
+. test nts_level_mean_mat_resid=nts_level_mean_tel_resid;
+
+ ( 1)  nts_level_mean_mat_resid - nts_level_mean_tel_resid = 0
+
+       F(  1,   291) =    0.31
+            Prob > F =    0.5788
+
+.  **year 1 social science  with incentive dummy and incentive interacted with residuals;
+. areg nts_evs_ss nts_level_mean_mat_pred nts_level_mean_tel_pred nts_level_mean_mat_resid nts_level_mean_tel_resid incentive if yea
+> r==1 & inlist(school_treatment,1,4,5), absorb(U_MC) cluster(apfschoolcode);
+
+Linear regression, absorbing indicators                Number of obs =   11228
+                                                       F(  5,   291) =  882.83
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.5401
+                                                       Adj R-squared =  0.5379
+                                                       Root MSE      =  .69068
+
+                        (Std. Err. adjusted for 292 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+  nts_evs_ss |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+nts_l~t_pred |   .3430053   .0265019    12.94   0.000     .2908456     .395165
+nts_l~l_pred |    .483088   .0261715    18.46   0.000     .4315785    .5345975
+nts_~t_resid |   .3114622   .0164071    18.98   0.000     .2791705    .3437538
+nts_~l_resid |   .4406058   .0160212    27.50   0.000     .4090737     .472138
+   incentive |    .015292   .0276424     0.55   0.581    -.0391124    .0696963
+       _cons |  -.0094844   .0206493    -0.46   0.646    -.0501254    .0311565
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+
+. estimates store reg2;
+
+. test nts_level_mean_mat_resid=nts_level_mean_tel_resid;
+
+ ( 1)  nts_level_mean_mat_resid - nts_level_mean_tel_resid = 0
+
+       F(  1,   291) =   22.45
+            Prob > F =    0.0000
+
+. **year 2 science  with incentive dummy and incentive interacted with residuals;
+. areg nts_evs_sc nts_level_mean_mat_pred nts_level_mean_tel_pred nts_level_mean_mat_resid nts_level_mean_tel_resid incentive if yea
+> r==2 & inlist(school_treatment,1,4,5) & cheaters==0, absorb(U_MC) cluster(apfschoolcode);
+
+Linear regression, absorbing indicators                Number of obs =    8949
+                                                       F(  5,   296) =  417.33
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.4061
+                                                       Adj R-squared =  0.4025
+                                                       Root MSE      =  .78843
+
+                        (Std. Err. adjusted for 297 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+  nts_evs_sc |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+nts_l~t_pred |   .2759516   .0413403     6.68   0.000     .1945935    .3573097
+nts_l~l_pred |   .4267871   .0362732    11.77   0.000      .355401    .4981731
+nts_~t_resid |   .2290778   .0217666    10.52   0.000      .186241    .2719146
+nts_~l_resid |   .4388873    .020576    21.33   0.000     .3983935     .479381
+   incentive |  -.0512554   .0308741    -1.66   0.098     -.112016    .0095051
+       _cons |   .0012932   .0223175     0.06   0.954    -.0426278    .0452142
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+
+. estimates store reg3;
+
+. test nts_level_mean_mat_resid=nts_level_mean_tel_resid;
+
+ ( 1)  nts_level_mean_mat_resid - nts_level_mean_tel_resid = 0
+
+       F(  1,   296) =   32.91
+            Prob > F =    0.0000
+
+.  **year 2 social science  with incentive dummy and incentive interacted with residuals;
+. areg nts_evs_ss nts_level_mean_mat_pred nts_level_mean_tel_pred nts_level_mean_mat_resid nts_level_mean_tel_resid incentive if yea
+> r==2 & inlist(school_treatment,1,4,5) & cheaters==0, absorb(U_MC) cluster(apfschoolcode);
+
+Linear regression, absorbing indicators                Number of obs =    8949
+                                                       F(  5,   296) =  310.13
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.3909
+                                                       Adj R-squared =  0.3872
+                                                       Root MSE      =  .82705
+
+                        (Std. Err. adjusted for 297 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+  nts_evs_ss |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+nts_l~t_pred |    .334863    .044668     7.50   0.000     .2469559      .42277
+nts_l~l_pred |     .35486   .0364598     9.73   0.000     .2831067    .4266132
+nts_~t_resid |   .2632163   .0227363    11.58   0.000      .218471    .3079616
+nts_~l_resid |   .4075539   .0221564    18.39   0.000     .3639499    .4511579
+   incentive |    .016166   .0327499     0.49   0.622    -.0482861    .0806181
+       _cons |  -.0151937   .0244127    -0.62   0.534    -.0632382    .0328507
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+
+. estimates store reg4;
+
+. test nts_level_mean_mat_resid=nts_level_mean_tel_resid;
+
+ ( 1)  nts_level_mean_mat_resid - nts_level_mean_tel_resid = 0
+
+       F(  1,   296) =   13.63
+            Prob > F =    0.0003
+
+. estout reg1 reg2 reg3 reg4 ,stats(N r2)  cells(b(fmt(3) star) se(par  fmt(3)))starlevels(* 0.10 ** 0.05 *** .01 );
+
+----------------------------------------------------------------------------
+                     reg1            reg2            reg3            reg4   
+                     b/se            b/se            b/se            b/se   
+----------------------------------------------------------------------------
+nts_l~t_pred        0.385***        0.343***        0.276***        0.335***
+                  (0.032)         (0.027)         (0.041)         (0.045)   
+nts_l~l_pred        0.296***        0.483***        0.427***        0.355***
+                  (0.029)         (0.026)         (0.036)         (0.036)   
+nts_~t_resid        0.356***        0.311***        0.229***        0.263***
+                  (0.021)         (0.016)         (0.022)         (0.023)   
+nts_~l_resid        0.338***        0.441***        0.439***        0.408***
+                  (0.017)         (0.016)         (0.021)         (0.022)   
+incentive          -0.007           0.015          -0.051*          0.016   
+                  (0.031)         (0.028)         (0.031)         (0.033)   
+_cons              -0.052**        -0.009           0.001          -0.015   
+                  (0.024)         (0.021)         (0.022)         (0.024)   
+----------------------------------------------------------------------------
+N               11228.000       11228.000        8949.000        8949.000   
+r2                  0.483           0.540           0.406           0.391   
+----------------------------------------------------------------------------
+
+. log close;
+      name:  <unnamed>
+       log:  c:\JPE\stata\\logs\\Incentives_JPE_table6.txt
+  log type:  text
+ closed on:   8 Feb 2011, 13:25:58
+------------------------------------------------------------------------------------------------------------------------------------

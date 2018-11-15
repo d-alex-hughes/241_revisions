@@ -1,0 +1,37 @@
+* Introduction 
+* Drawing Inferences from Intuitions, Anecdotes and Correlations  
+- What are the strengthes and weaknesses of arguing from intuition and anecdote?
+- Why, even when data is present, might robust correlations fail to impilcate a causal relationship?
+- What is a /counfounder/ in the context of a causal question? 
+* Experiments as a Solution to the Problem of Unobserved Confounders 
+- Early work by Lind (scurvy), Watson (smallpox), Pasteur (anthrax) were experiments designed to learn about the world. But, these didn't experiments didn't randomize. What then is a necessary, and sufficient condition for an action to be an experiment?
+- What might be the drawbacks to failing to randomize? 
+* Experiments as Fair Tests 
+- What aspect of (modern) experiments make them /fair/?
+- Why might this be not only procedurally fair, but also fair in terms of being /unbiased/ in estimating a treatment effect? 
+- If a PM cares about a new feature /causing/ an increase in "product engagement" why are experiments a /less risky/ way to learn this? 
+* Field Experiments 
+- What separates a field experiment from a laboratory experiment (e.g. consider undergraduate psychology experiments), or product-lab experiments?
+- What are the five considerations provided to us to evalute the /field-ness/ of an experiment?
+  1. 
+  2. 
+  3. 
+  4. 
+  5. 
+- 
+* Advantages and Disadvantages of Experiments in Real-World Settings 
+- Advantages:
+  - 
+  - 
+  - 
+  - 
+- Disadvantages:
+  - 
+  - 
+  - 
+  - 
+* Naturally Ocurring Experimentse and Quasi-Experiments 
+- /Naturally Occurring Experiments/: [define]
+  - [Examples]
+- /Downstream Experiments/: [define]
+  - [Examples]

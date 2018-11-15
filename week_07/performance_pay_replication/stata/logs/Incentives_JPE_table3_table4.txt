@@ -1,0 +1,613 @@
+------------------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  c:\JPE\stata\\logs\Incentives_JPE_table3_table4.txt
+  log type:  text
+ opened on:   8 Feb 2011, 13:22:53
+
+. use data\dta\Incentives_JPE_analysis_starter_file.dta, clear;
+
+. bysort hplstudentkey sub : keep if _n==1;
+(96992 observations deleted)
+
+. replace y0_nts=0 if class_y2==2;
+(0 real changes made)
+
+. replace y0_nts=0 if class_y1==1;
+(0 real changes made)
+
+. keep hplstudentkey  y0_nts repeat_perc_with_HEL* non_repeat_perc_with_HEL*  incentive school_treatment U_MC apfschoolcode sub clas
+> s_y1 class_y2;
+
+. forvalues i=1/2 {;
+  2. rename repeat_perc_with_HEL_y`i' repeat_perc_with_HEL`i';
+  3. rename non_repeat_perc_with_HEL_y`i' non_repeat_perc_with_HEL`i';
+  4. rename class_y`i' class`i';
+  5. };
+
+. reshape long repeat_perc_with_HEL non_repeat_perc_with_HEL class , i(hplstudentkey sub) j(year);
+(note: j = 1 2)
+
+Data                               wide   ->   long
+-----------------------------------------------------------------------------
+Number of obs.                    96992   ->  193984
+Number of variables                  13   ->      11
+j variable (2 values)                     ->   year
+xij variables:
+repeat_perc_with_HEL1 repeat_perc_with_HEL2->  repeat_perc_with_HEL
+non_repeat_perc_with_HEL1 non_repeat_perc_with_HEL2->non_repeat_perc_with_HEL
+                          class1 class2   ->   class
+-----------------------------------------------------------------------------
+
+. gen cheaters=0;
+
+.         replace cheaters=1 if apfschoolcode==41904 & class==5 & year==2;
+(94 real changes made)
+
+.         replace cheaters=1 if apfschoolcode==42112 & year==2;
+(478 real changes made)
+
+. **REPEAT QUESTIONS WITH HEL;
+. rename repeat_perc_with_HEL perc1;
+
+. rename non_repeat_perc_with_HEL perc0;
+
+. reshape long perc , i(hplstudentkey year sub) j(repeat);
+(note: j = 0 1)
+
+Data                               wide   ->   long
+-----------------------------------------------------------------------------
+Number of obs.                   193984   ->  387968
+Number of variables                  12   ->      12
+j variable (2 values)                     ->   repeat
+xij variables:
+                            perc0 perc1   ->   perc
+-----------------------------------------------------------------------------
+
+. gen non_repeat=repeat==0;
+
+. gen inc_int_repeat=incentive*repeat;
+
+. gen inc_int_non_repeat=incentive*non_repeat;
+
+. save data\dta\Incentives_JPE_table3_INT.dta, replace;
+(note: file data\dta\Incentives_JPE_table3_INT.dta not found)
+file data\dta\Incentives_JPE_table3_INT.dta saved
+
+. areg perc  repeat  inc_int_non_repeat inc_int_repeat y0_nts if inlist(school_treatment,1,4,5) & year==1 & cheaters==0, absorb(U_MC
+> ) cluster(apfschoolcode);
+
+Linear regression, absorbing indicators                Number of obs =   62872
+                                                       F(  4,   299) =  365.56
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2436
+                                                       Adj R-squared =  0.2430
+                                                       Root MSE      =  .22619
+
+                        (Std. Err. adjusted for 300 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+        perc |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      repeat |   .0161537    .006252     2.58   0.010     .0038503    .0284571
+inc_int_no~t |   .0298079    .009132     3.26   0.001     .0118367    .0477791
+inc_int_re~t |   .0426016   .0112788     3.78   0.000     .0204057    .0647974
+      y0_nts |   .1138849   .0030067    37.88   0.000     .1079678    .1198019
+       _cons |   .3297605   .0073658    44.77   0.000     .3152652    .3442559
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+
+. estimates store y1;
+
+. test inc_int_repeat=inc_int_non_repeat;
+
+ ( 1)  - inc_int_non_repeat + inc_int_repeat = 0
+
+       F(  1,   299) =    2.15
+            Prob > F =    0.1438
+
+. estadd scalar pvalue=r(p);
+
+added scalar:
+             e(pvalue) =  .14378431
+
+. areg perc  repeat  inc_int_non_repeat inc_int_repeat y0_nts if inlist(school_treatment,1,4,5) & year==2 & cheaters==0, absorb(U_MC
+> ) cluster(apfschoolcode);
+
+Linear regression, absorbing indicators                Number of obs =   54972
+                                                       F(  4,   297) =  480.28
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.1808
+                                                       Adj R-squared =  0.1800
+                                                       Root MSE      =   .2277
+
+                        (Std. Err. adjusted for 298 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+        perc |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      repeat |   .0923924    .004812    19.20   0.000     .0829224    .1018624
+inc_int_no~t |   .0393787   .0093794     4.20   0.000     .0209203    .0578372
+inc_int_re~t |    .042566   .0112456     3.79   0.000      .020435    .0646971
+      y0_nts |   .0875636   .0036698    23.86   0.000     .0803414    .0947857
+       _cons |   .3261818   .0069751    46.76   0.000     .3124549    .3399086
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+
+. estimates store y2;
+
+. test inc_int_repeat=inc_int_non_repeat;
+
+ ( 1)  - inc_int_non_repeat + inc_int_repeat = 0
+
+       F(  1,   297) =    0.30
+            Prob > F =    0.5817
+
+. estadd scalar pvalue=r(p);
+
+added scalar:
+             e(pvalue) =  .58168957
+
+. areg perc  repeat  inc_int_non_repeat inc_int_repeat y0_nts if sub==1 & inlist(school_treatment,1,4,5) & year==1 & cheaters==0, ab
+> sorb(U_MC) cluster(apfschoolcode);
+
+Linear regression, absorbing indicators                Number of obs =   31225
+                                                       F(  4,   299) =  225.94
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2612
+                                                       Adj R-squared =  0.2600
+                                                       Root MSE      =   .2007
+
+                        (Std. Err. adjusted for 300 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+        perc |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      repeat |   -.004989   .0070435    -0.71   0.479      -.01885    .0088721
+inc_int_no~t |   .0328198   .0093362     3.52   0.001     .0144468    .0511927
+inc_int_re~t |   .0419175   .0130441     3.21   0.001     .0162476    .0675874
+      y0_nts |   .1024099   .0034359    29.81   0.000     .0956483    .1091716
+       _cons |   .2501105    .007341    34.07   0.000     .2356639    .2645571
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+
+. estimates store y1_m;
+
+. test inc_int_repeat=inc_int_non_repeat;
+
+ ( 1)  - inc_int_non_repeat + inc_int_repeat = 0
+
+       F(  1,   299) =    0.78
+            Prob > F =    0.3790
+
+. estadd scalar pvalue=r(p);
+
+added scalar:
+             e(pvalue) =  .37897658
+
+. areg perc  repeat  inc_int_non_repeat inc_int_repeat y0_nts if sub==1 & inlist(school_treatment,1,4,5) & year==2 & cheaters==0, ab
+> sorb(U_MC) cluster(apfschoolcode);
+
+Linear regression, absorbing indicators                Number of obs =   29594
+                                                       F(  4,   297) =  453.43
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2267
+                                                       Adj R-squared =  0.2253
+                                                       Root MSE      =  .21804
+
+                        (Std. Err. adjusted for 298 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+        perc |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      repeat |   .1293395   .0061752    20.94   0.000     .1171868    .1414922
+inc_int_no~t |   .0459023   .0101337     4.53   0.000     .0259593    .0658453
+inc_int_re~t |   .0436935    .011651     3.75   0.000     .0207646    .0666224
+      y0_nts |   .0810811   .0044321    18.29   0.000     .0723589    .0898033
+       _cons |     .25513   .0077469    32.93   0.000     .2398843    .2703757
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+
+. estimates store y2_m;
+
+. test inc_int_repeat=inc_int_non_repeat;
+
+ ( 1)  - inc_int_non_repeat + inc_int_repeat = 0
+
+       F(  1,   297) =    0.09
+            Prob > F =    0.7657
+
+. estadd scalar pvalue=r(p);
+
+added scalar:
+             e(pvalue) =  .76571316
+
+. areg perc  repeat  inc_int_non_repeat inc_int_repeat y0_nts if sub==2 & inlist(school_treatment,1,4,5) & year==1 & cheaters==0, ab
+> sorb(U_MC) cluster(apfschoolcode);
+
+Linear regression, absorbing indicators                Number of obs =   31647
+                                                       F(  4,   299) =  376.14
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2972
+                                                       Adj R-squared =  0.2960
+                                                       Root MSE      =  .21578
+
+                        (Std. Err. adjusted for 300 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+        perc |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      repeat |   .0364102   .0072985     4.99   0.000     .0220473     .050773
+inc_int_no~t |   .0267493   .0098184     2.72   0.007     .0074273    .0460713
+inc_int_re~t |    .043493   .0110589     3.93   0.000       .02173    .0652561
+      y0_nts |   .1265774   .0034447    36.75   0.000     .1197984    .1333564
+       _cons |    .408501   .0080422    50.79   0.000     .3926745    .4243274
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+
+. estimates store y1_t;
+
+. test inc_int_repeat=inc_int_non_repeat;
+
+ ( 1)  - inc_int_non_repeat + inc_int_repeat = 0
+
+       F(  1,   299) =    3.13
+            Prob > F =    0.0779
+
+. estadd scalar pvalue=r(p);
+
+added scalar:
+             e(pvalue) =  .07794515
+
+. areg perc  repeat  inc_int_non_repeat inc_int_repeat y0_nts if sub==2 & inlist(school_treatment,1,4,5) & year==2 & cheaters==0, ab
+> sorb(U_MC) cluster(apfschoolcode);
+
+Linear regression, absorbing indicators                Number of obs =   25378
+                                                       F(  4,   297) =  310.85
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.1775
+                                                       Adj R-squared =  0.1758
+                                                       Root MSE      =  .22231
+
+                        (Std. Err. adjusted for 298 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+        perc |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      repeat |   .0711376   .0071136    10.00   0.000     .0571381    .0851371
+inc_int_no~t |    .032949   .0099893     3.30   0.001     .0132903    .0526077
+inc_int_re~t |   .0409055   .0127065     3.22   0.001     .0158994    .0659116
+      y0_nts |   .0958393   .0036125    26.53   0.000       .08873    .1029487
+       _cons |   .3961981    .007373    53.74   0.000     .3816881    .4107081
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+
+. estimates store y2_t;
+
+. test inc_int_repeat=inc_int_non_repeat;
+
+ ( 1)  - inc_int_non_repeat + inc_int_repeat = 0
+
+       F(  1,   297) =    0.87
+            Prob > F =    0.3531
+
+. estadd scalar pvalue=r(p);
+
+added scalar:
+             e(pvalue) =  .35308837
+
+. estout  y1 y2 y1_m y2_m y1_t y2_t  ,title("repeat questions with HEL") stats(N r2 pvalue, fmt(0 2 3)) cells(b(fmt(3) star) se(par 
+> fmt(3))) starlevels(* 0.10 ** 0.05 *** .01 );
+
+repeat questions with HEL
+------------------------------------------------------------------------------------------------------------
+                       y1              y2            y1_m            y2_m            y1_t            y2_t   
+                     b/se            b/se            b/se            b/se            b/se            b/se   
+------------------------------------------------------------------------------------------------------------
+repeat              0.016**         0.092***       -0.005           0.129***        0.036***        0.071***
+                  (0.006)         (0.005)         (0.007)         (0.006)         (0.007)         (0.007)   
+inc_int_no~t        0.030***        0.039***        0.033***        0.046***        0.027***        0.033***
+                  (0.009)         (0.009)         (0.009)         (0.010)         (0.010)         (0.010)   
+inc_int_re~t        0.043***        0.043***        0.042***        0.044***        0.043***        0.041***
+                  (0.011)         (0.011)         (0.013)         (0.012)         (0.011)         (0.013)   
+y0_nts              0.114***        0.088***        0.102***        0.081***        0.127***        0.096***
+                  (0.003)         (0.004)         (0.003)         (0.004)         (0.003)         (0.004)   
+_cons               0.330***        0.326***        0.250***        0.255***        0.409***        0.396***
+                  (0.007)         (0.007)         (0.007)         (0.008)         (0.008)         (0.007)   
+------------------------------------------------------------------------------------------------------------
+N                   62872           54972           31225           29594           31647           25378   
+r2                   0.24            0.18            0.26            0.23            0.30            0.18   
+pvalue              0.144           0.582           0.379           0.766           0.078           0.353   
+------------------------------------------------------------------------------------------------------------
+
+. use data\dta\Incentives_JPE_analysis_starter_file.dta, clear;
+
+. bysort hplstudentkey sub : keep if _n==1;
+(96992 observations deleted)
+
+. replace y0_nts=0 if class_y2==2;
+(0 real changes made)
+
+. replace y0_nts=0 if class_y1==1;
+(0 real changes made)
+
+. keep hplstudentkey  y0_nts mcq_perc* non_mcq_perc*  incentive school_treatment U_MC apfschoolcode sub class_y1 class_y2;
+
+. forvalues i=1/2 {;
+  2. rename mcq_perc_y`i' mcq_perc`i';
+  3. rename non_mcq_perc_y`i' non_mcq_perc`i';
+  4. rename class_y`i' class`i';
+  5. };
+
+. reshape long mcq_perc non_mcq_perc class , i(hplstudentkey sub) j(year);
+(note: j = 1 2)
+
+Data                               wide   ->   long
+-----------------------------------------------------------------------------
+Number of obs.                    96992   ->  193984
+Number of variables                  13   ->      11
+j variable (2 values)                     ->   year
+xij variables:
+                    mcq_perc1 mcq_perc2   ->   mcq_perc
+            non_mcq_perc1 non_mcq_perc2   ->   non_mcq_perc
+                          class1 class2   ->   class
+-----------------------------------------------------------------------------
+
+. gen cheaters=0;
+
+.         replace cheaters=1 if apfschoolcode==41904 & class==5 & year==2;
+(94 real changes made)
+
+.         replace cheaters=1 if apfschoolcode==42112 & year==2;
+(478 real changes made)
+
+. **MULTIPLE CHOICE QUESTIONS;
+. keep hplstudentkey  y0_nts mcq non_mcq incentive year school_treatment U_MC apfschoolcode sub cheaters;
+
+. rename mcq_perc perc1;
+
+. rename non_mcq_perc perc0;
+
+. reshape long perc , i(hplstudentkey year sub) j(mcq);
+(note: j = 0 1)
+
+Data                               wide   ->   long
+-----------------------------------------------------------------------------
+Number of obs.                   193984   ->  387968
+Number of variables                  11   ->      11
+j variable (2 values)                     ->   mcq
+xij variables:
+                            perc0 perc1   ->   perc
+-----------------------------------------------------------------------------
+
+. gen non_mcq=mcq==0;
+
+. gen inc_int_mcq=incentive*mcq;
+
+. gen inc_int_non_mcq=incentive*non_mcq;
+
+. save data\dta\Incentives_JPE_table4_INT.dta, replace;
+(note: file data\dta\Incentives_JPE_table4_INT.dta not found)
+file data\dta\Incentives_JPE_table4_INT.dta saved
+
+. forvalues i=1/2 {;
+  2. areg perc  mcq  inc_int_non_mcq inc_int_mcq y0_nts if inlist(school_treatment,1,4,5) & year==`i' & cheaters==0, absorb(U_MC) cl
+> uster(apfschoolcode);
+  3. estimates store y`i';
+  4. test inc_int_mcq=inc_int_non_mcq;
+  5. estadd scalar pvalue=r(p);
+  6. };
+
+Linear regression, absorbing indicators                Number of obs =   84290
+                                                       F(  4,   299) =  544.36
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.1994
+                                                       Adj R-squared =  0.1989
+                                                       Root MSE      =  .24953
+
+                        (Std. Err. adjusted for 300 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+        perc |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         mcq |   .0676715   .0038811    17.44   0.000     .0600337    .0753093
+inc_int_no~q |   .0275654   .0091626     3.01   0.003     .0095341    .0455968
+ inc_int_mcq |   .0341733   .0092591     3.69   0.000     .0159521    .0523944
+      y0_nts |   .1101953   .0030963    35.59   0.000      .104102    .1162885
+       _cons |   .3060243    .007158    42.75   0.000     .2919379    .3201106
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+
+ ( 1)  - inc_int_non_mcq + inc_int_mcq = 0
+
+       F(  1,   299) =    1.91
+            Prob > F =    0.1682
+
+added scalar:
+             e(pvalue) =  .16819395
+
+Linear regression, absorbing indicators                Number of obs =   59520
+                                                       F(  4,   297) =  515.70
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.1844
+                                                       Adj R-squared =  0.1837
+                                                       Root MSE      =  .21296
+
+                        (Std. Err. adjusted for 298 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+        perc |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         mcq |   .0798546   .0036292    22.00   0.000     .0727125    .0869968
+inc_int_no~q |    .036813   .0098791     3.73   0.000     .0173711     .056255
+ inc_int_mcq |   .0418182   .0086589     4.83   0.000     .0247776    .0588587
+      y0_nts |   .0816604   .0031804    25.68   0.000     .0754014    .0879195
+       _cons |   .3101049   .0071378    43.45   0.000     .2960578     .324152
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+
+ ( 1)  - inc_int_non_mcq + inc_int_mcq = 0
+
+       F(  1,   297) =    1.16
+            Prob > F =    0.2822
+
+added scalar:
+             e(pvalue) =  .28216457
+
+. forvalues i=1/2 {;
+  2. areg perc  mcq  inc_int_non_mcq inc_int_mcq y0_nts if sub==1 &  inlist(school_treatment,1,4,5) & year==`i' & cheaters==0, absor
+> b(U_MC) cluster(apfschoolcode);
+  3. estimates store y`i'_m;
+  4. test inc_int_mcq=inc_int_non_mcq;
+  5. estadd scalar pvalue=r(p);
+  6. };
+
+Linear regression, absorbing indicators                Number of obs =   41892
+                                                       F(  4,   299) =  239.86
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2178
+                                                       Adj R-squared =  0.2168
+                                                       Root MSE      =  .20154
+
+                        (Std. Err. adjusted for 300 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+        perc |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         mcq |  -.0306589   .0046486    -6.60   0.000     -.039807   -.0215108
+inc_int_no~q |   .0317505    .009557     3.32   0.001     .0129429    .0505581
+ inc_int_mcq |   .0342765   .0092537     3.70   0.000      .016066     .052487
+      y0_nts |   .0928066   .0031061    29.88   0.000     .0866941    .0989191
+       _cons |    .252904   .0070869    35.69   0.000     .2389575    .2668505
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+
+ ( 1)  - inc_int_non_mcq + inc_int_mcq = 0
+
+       F(  1,   299) =    0.18
+            Prob > F =    0.6710
+
+added scalar:
+             e(pvalue) =  .67101996
+
+Linear regression, absorbing indicators                Number of obs =   29594
+                                                       F(  4,   297) =   78.61
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.1763
+                                                       Adj R-squared =  0.1749
+                                                       Root MSE      =  .18914
+
+                        (Std. Err. adjusted for 298 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+        perc |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         mcq |   .0056589   .0044591     1.27   0.205    -.0031166    .0144344
+inc_int_no~q |   .0470538    .010465     4.50   0.000     .0264588    .0676488
+ inc_int_mcq |   .0413777   .0093816     4.41   0.000     .0229149    .0598405
+      y0_nts |   .0637499   .0037451    17.02   0.000     .0563796    .0711202
+       _cons |   .2765659   .0077162    35.84   0.000     .2613805    .2917513
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+
+ ( 1)  - inc_int_non_mcq + inc_int_mcq = 0
+
+       F(  1,   297) =    0.91
+            Prob > F =    0.3408
+
+added scalar:
+             e(pvalue) =  .34079399
+
+. forvalues i=1/2 {;
+  2. areg perc  mcq  inc_int_non_mcq inc_int_mcq y0_nts if sub==2 & inlist(school_treatment,1,4,5) & year==`i' & cheaters==0, absorb
+> (U_MC) cluster(apfschoolcode);
+  3. estimates store y`i'_t;
+  4. test inc_int_mcq=inc_int_non_mcq;
+  5. estadd scalar pvalue=r(p);
+  6. };
+
+Linear regression, absorbing indicators                Number of obs =   42398
+                                                       F(  4,   299) = 1033.37
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.3090
+                                                       Adj R-squared =  0.3082
+                                                       Root MSE      =  .23978
+
+                        (Std. Err. adjusted for 300 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+        perc |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         mcq |   .1650208   .0054422    30.32   0.000      .154311    .1757306
+inc_int_no~q |   .0233877   .0097967     2.39   0.018     .0041085    .0426668
+ inc_int_mcq |   .0337349   .0107626     3.13   0.002     .0125549    .0549148
+      y0_nts |   .1293052   .0037487    34.49   0.000     .1219279    .1366824
+       _cons |   .3585332   .0080074    44.78   0.000     .3427752    .3742912
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+
+ ( 1)  - inc_int_non_mcq + inc_int_mcq = 0
+
+       F(  1,   299) =    2.44
+            Prob > F =    0.1194
+
+added scalar:
+             e(pvalue) =  .11942184
+
+Linear regression, absorbing indicators                Number of obs =   29926
+                                                       F(  4,   297) =  979.28
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2889
+                                                       Adj R-squared =  0.2876
+                                                       Root MSE      =  .20412
+
+                        (Std. Err. adjusted for 298 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+        perc |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+         mcq |   .1533895   .0052599    29.16   0.000      .143038     .163741
+inc_int_no~q |    .026837   .0106647     2.52   0.012      .005849    .0478249
+ inc_int_mcq |   .0421479   .0094249     4.47   0.000     .0235998    .0606961
+      y0_nts |   .0993574   .0030751    32.31   0.000     .0933056    .1054092
+       _cons |   .3431218   .0076024    45.13   0.000     .3281605    .3580831
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+
+ ( 1)  - inc_int_non_mcq + inc_int_mcq = 0
+
+       F(  1,   297) =    5.10
+            Prob > F =    0.0246
+
+added scalar:
+             e(pvalue) =  .02463673
+
+. estout  y1 y2 y1_m y2_m y1_t y2_t  ,title("mcq questions") stats(N r2 pvalue, fmt(0 2 3)) cells(b(fmt(3) star) se(par fmt(3))) sta
+> rlevels(* 0.10 ** 0.05 *** .01 );
+
+mcq questions
+------------------------------------------------------------------------------------------------------------
+                       y1              y2            y1_m            y2_m            y1_t            y2_t   
+                     b/se            b/se            b/se            b/se            b/se            b/se   
+------------------------------------------------------------------------------------------------------------
+mcq                 0.068***        0.080***       -0.031***        0.006           0.165***        0.153***
+                  (0.004)         (0.004)         (0.005)         (0.004)         (0.005)         (0.005)   
+inc_int_no~q        0.028***        0.037***        0.032***        0.047***        0.023**         0.027** 
+                  (0.009)         (0.010)         (0.010)         (0.010)         (0.010)         (0.011)   
+inc_int_mcq         0.034***        0.042***        0.034***        0.041***        0.034***        0.042***
+                  (0.009)         (0.009)         (0.009)         (0.009)         (0.011)         (0.009)   
+y0_nts              0.110***        0.082***        0.093***        0.064***        0.129***        0.099***
+                  (0.003)         (0.003)         (0.003)         (0.004)         (0.004)         (0.003)   
+_cons               0.306***        0.310***        0.253***        0.277***        0.359***        0.343***
+                  (0.007)         (0.007)         (0.007)         (0.008)         (0.008)         (0.008)   
+------------------------------------------------------------------------------------------------------------
+N                   84290           59520           41892           29594           42398           29926   
+r2                   0.20            0.18            0.22            0.18            0.31            0.29   
+pvalue              0.168           0.282           0.671           0.341           0.119           0.025   
+------------------------------------------------------------------------------------------------------------
+
+. log close;
+      name:  <unnamed>
+       log:  c:\JPE\stata\\logs\Incentives_JPE_table3_table4.txt
+  log type:  text
+ closed on:   8 Feb 2011, 13:23:59
+------------------------------------------------------------------------------------------------------------------------------------

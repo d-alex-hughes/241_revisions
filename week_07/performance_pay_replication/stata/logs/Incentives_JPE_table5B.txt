@@ -1,0 +1,720 @@
+------------------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  c:\JPE\stata\\logs\\Incentives_JPE_table5B.txt
+  log type:  text
+ opened on:   8 Feb 2011, 13:24:28
+
+. use data\dta\Incentives_JPE_analysis_starter_file.dta, clear;
+
+.         **keeping only one observation per student per subject (i.e. removing round LEL or HEL as a dimension);
+. bysort hplstudentkey sub : keep if _n==1;
+(96992 observations deleted)
+
+. drop level;
+
+. **renaming variables;
+. rename  t_educ_level_completed_y1 t_education_y1;
+
+. rename  t_educ_level_completed_y2 t_education_y2;
+
+. rename t_training_qualif_y2 t_training_y2;
+
+. rename t_training_qualif_y1 t_training_y1;
+
+. **generating mean of absence on same day and previous day;
+. egen tabsent_y2_year2=rmean(tabsent1_y2 tabsent2_y2);
+(14382 missing values generated)
+
+. egen tabsent_y1_year1=rmean(tabsent1_y1 tabsent2_y1);
+(33894 missing values generated)
+
+. **fixing teacher service variable;
+. replace t_service_y2=. if t_service_y2==2006;
+(2648 real changes made, 2648 to missing)
+
+. replace t_service_y1=. if t_service_y1==2006;
+(4844 real changes made, 4844 to missing)
+
+. replace t_education_y1=. if t_education_y1==5;
+(636 real changes made, 636 to missing)
+
+. replace t_education_y2=. if t_education_y2==5;
+(52 real changes made, 52 to missing)
+
+. replace t_training_y1=. if t_training_y1==5;
+(598 real changes made, 598 to missing)
+
+. replace t_training_y2=. if t_training_y2==5;
+(72 real changes made, 72 to missing)
+
+. **reshaping file for stacked regressions;
+. foreach var in t_education t_training t_service t_salary t_gender  tact_teach tact_active  teacher_group t_deg {;
+  2. rename `var'_y2 `var'2;
+  3. rename `var'_y1 `var'1;
+  4. };
+
+. rename tabsent_y1_year1 tabsent_y1;
+
+.  rename tabsent_y2_year2 tabsent_y2;
+
+.  rename tabsent_y1 tabsent1;
+
+. rename tabsent_y2 tabsent2;
+
+. rename y2_nts_level_mean nts2;
+
+. rename y1_nts_level_mean nts1;
+
+. rename y0_nts bl_nts;
+
+. reshape long t_deg t_education t_training t_service t_salary t_gender  tact_teach tact_active tabsent teacher_group nts , i(hplstu
+> dentkey sub) j(year);
+(note: j = 1 2)
+
+Data                               wide   ->   long
+-----------------------------------------------------------------------------
+Number of obs.                    96992   ->  193984
+Number of variables                  97   ->      87
+j variable (2 values)                     ->   year
+xij variables:
+                          t_deg1 t_deg2   ->   t_deg
+              t_education1 t_education2   ->   t_education
+                t_training1 t_training2   ->   t_training
+                  t_service1 t_service2   ->   t_service
+                    t_salary1 t_salary2   ->   t_salary
+                    t_gender1 t_gender2   ->   t_gender
+                tact_teach1 tact_teach2   ->   tact_teach
+              tact_active1 tact_active2   ->   tact_active
+                      tabsent1 tabsent2   ->   tabsent
+          teacher_group1 teacher_group2   ->   teacher_group
+                              nts1 nts2   ->   nts
+-----------------------------------------------------------------------------
+
+. egen id=group(hplstudentkey sub);
+
+. tsset id year;
+       panel variable:  id (strongly balanced)
+        time variable:  year, 1 to 2
+                delta:  1 unit
+
+. gen lagged_nts=l.nts;
+(128063 missing values generated)
+
+. replace lagged_nts=bl_nts if year==1;
+(56726 real changes made)
+
+. keep apfschoolcode U_MC school_treatment hplstudentkey sub year t_deg t_education t_training t_service t_salary t_gender  tact_tea
+> ch tact_active tabsent nts lagged_nts teacher_group cheaters incentive;
+
+. replace cheaters=0 if cheaters==1 & year==1;
+(572 real changes made)
+
+. save data\dta\Incentives_JPE_table5_panelB_INT.dta, replace;
+(note: file data\dta\Incentives_JPE_table5_panelB_INT.dta not found)
+file data\dta\Incentives_JPE_table5_panelB_INT.dta saved
+
+. **generating interaction terms;
+. gen log_t_salary=log(t_salary);
+(90806 missing values generated)
+
+. foreach var in t_education t_training t_service t_gender log_t_salary tact_teach tact_active tabsent t_deg {;
+  2. gen `var'_int_inc=`var'*incentive;
+  3. disp "`var'";
+  4. areg nts lagged_nts incentive `var' `var'_int_inc if inlist(school_treatment,1,4,5) & cheaters!=1 & teacher_group!=1 & inlist(t
+> _deg,1,2), absorb(U_MC) cluster(apfschoolcode);
+  5. estimates store `var';
+  6. };
+(89574 missing values generated)
+t_education
+
+Linear regression, absorbing indicators                Number of obs =   53737
+                                                       F(  4,   298) =  273.16
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2908
+                                                       Adj R-squared =  0.2901
+                                                       Root MSE      =  .85348
+
+                        (Std. Err. adjusted for 299 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+         nts |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+  lagged_nts |   .5023466   .0161081    31.19   0.000     .4706466    .5340466
+   incentive |  -.1133188   .1625251    -0.70   0.486    -.4331611    .2065234
+ t_education |   .0028598   .0323459     0.09   0.930    -.0607955    .0665151
+t_educatio~c |    .085943   .0500646     1.72   0.087    -.0125819     .184468
+       _cons |  -.0373539   .1056511    -0.35   0.724    -.2452707    .1705628
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+(89556 missing values generated)
+t_training
+
+Linear regression, absorbing indicators                Number of obs =   53890
+                                                       F(  4,   298) =  261.93
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2901
+                                                       Adj R-squared =  0.2894
+                                                       Root MSE      =  .85351
+
+                        (Std. Err. adjusted for 299 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+         nts |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+  lagged_nts |   .5027546   .0160191    31.38   0.000     .4712298    .5342795
+   incentive |  -.2241846    .176051    -1.27   0.204    -.5706453    .1222761
+  t_training |  -.0506387   .0411629    -1.23   0.220    -.1316456    .0303682
+t_training~c |   .1380542   .0614507     2.25   0.025      .017122    .2589865
+       _cons |   .1114163   .1192719     0.93   0.351    -.1233056    .3461382
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+(96378 missing values generated)
+t_service
+
+Linear regression, absorbing indicators                Number of obs =   54142
+                                                       F(  4,   298) =  254.66
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2924
+                                                       Adj R-squared =  0.2917
+                                                       Root MSE      =  .85143
+
+                        (Std. Err. adjusted for 299 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+         nts |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+  lagged_nts |   .5021094   .0161886    31.02   0.000     .4702509    .5339679
+   incentive |   .2580504   .0586838     4.40   0.000     .1425632    .3735375
+   t_service |  -.0012572   .0028999    -0.43   0.665    -.0069641    .0044497
+t_service_~c |  -.0088141   .0039149    -2.25   0.025    -.0165183   -.0011098
+       _cons |  -.0119122   .0410591    -0.29   0.772    -.0927148    .0688904
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+(88886 missing values generated)
+t_gender
+
+Linear regression, absorbing indicators                Number of obs =   54142
+                                                       F(  4,   298) =  277.63
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2891
+                                                       Adj R-squared =  0.2884
+                                                       Root MSE      =  .85337
+
+                        (Std. Err. adjusted for 299 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+         nts |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+  lagged_nts |   .5024128   .0159631    31.47   0.000     .4709981    .5338275
+   incentive |   .0312246   .0912976     0.34   0.733    -.1484452    .2108943
+    t_gender |  -.0837055   .0566543    -1.48   0.141    -.1951986    .0277877
+t_gender_i~c |   .0899389    .068912     1.31   0.193     -.045677    .2255548
+       _cons |   .0849321   .0711184     1.19   0.233    -.0550259    .2248901
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+(90806 missing values generated)
+log_t_salary
+
+Linear regression, absorbing indicators                Number of obs =   53122
+                                                       F(  4,   298) =  256.23
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2922
+                                                       Adj R-squared =  0.2915
+                                                       Root MSE      =  .85282
+
+                        (Std. Err. adjusted for 299 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+         nts |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+  lagged_nts |   .5029597   .0162871    30.88   0.000     .4709073     .535012
+   incentive |   1.775289   .8278254     2.14   0.033      .146165    3.404414
+log_t_salary |  -.0338958    .065986    -0.51   0.608    -.1637534    .0959618
+log_t_sala~c |   -.179447    .091276    -1.97   0.050    -.3590741    .0001801
+       _cons |    .279579   .5933816     0.47   0.638    -.8881701    1.447328
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+(48754 missing values generated)
+tact_teach
+
+Linear regression, absorbing indicators                Number of obs =   53383
+                                                       F(  4,   298) =  257.81
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2890
+                                                       Adj R-squared =  0.2883
+                                                       Root MSE      =  .85486
+
+                        (Std. Err. adjusted for 299 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+         nts |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+  lagged_nts |   .5011311   .0160201    31.28   0.000     .4696043    .5326579
+   incentive |   .1177687   .0735624     1.60   0.110    -.0269989    .2625364
+  tact_teach |   .1308581   .0929407     1.41   0.160    -.0520452    .3137614
+tact_teach~c |    .064211   .1105391     0.58   0.562    -.1533252    .2817472
+       _cons |  -.1073496   .0617711    -1.74   0.083    -.2289125    .0142133
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+(48754 missing values generated)
+tact_active
+
+Linear regression, absorbing indicators                Number of obs =   53383
+                                                       F(  4,   298) =  275.05
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2894
+                                                       Adj R-squared =  0.2887
+                                                       Root MSE      =  .85462
+
+                        (Std. Err. adjusted for 299 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+         nts |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+  lagged_nts |   .5012959   .0160905    31.15   0.000     .4696305    .5329612
+   incentive |   .0837517   .0535875     1.56   0.119    -.0217061    .1892095
+ tact_active |   .0554112   .0778216     0.71   0.477    -.0977384    .2085608
+tact_activ~c |   .1640754   .0978214     1.68   0.095    -.0284329    .3565837
+       _cons |  -.0515612   .0444346    -1.16   0.247    -.1390066    .0358842
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+(48276 missing values generated)
+tabsent
+
+Linear regression, absorbing indicators                Number of obs =   53609
+                                                       F(  4,   298) =  253.58
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2876
+                                                       Adj R-squared =  0.2869
+                                                       Root MSE      =  .85528
+
+                        (Std. Err. adjusted for 299 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+         nts |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+  lagged_nts |   .5025872   .0161915    31.04   0.000      .470723    .5344514
+   incentive |   .1500256   .0498841     3.01   0.003     .0518558    .2481954
+     tabsent |  -.1486714   .1373832    -1.08   0.280    -.4190356    .1216928
+tabsent_in~c |   .0130604   .1710975     0.08   0.939    -.3236521    .3497729
+       _cons |   .0020893   .0397851     0.05   0.958    -.0762062    .0803847
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+(88886 missing values generated)
+t_deg
+
+Linear regression, absorbing indicators                Number of obs =   54142
+                                                       F(  4,   298) =  258.90
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2913
+                                                       Adj R-squared =  0.2906
+                                                       Root MSE      =  .85205
+
+                        (Std. Err. adjusted for 299 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+         nts |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+  lagged_nts |   .5046291   .0162307    31.09   0.000     .4726878    .5365703
+   incentive |  -.1047579   .0927717    -1.13   0.260    -.2873285    .0778128
+       t_deg |  -.0145109   .0421706    -0.34   0.731    -.0975008    .0684791
+t_deg_int_~c |   .1543224    .055133     2.80   0.005     .0458231    .2628218
+       _cons |  -.0041112   .0699602    -0.06   0.953    -.1417898    .1335674
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+
+. estout t_education t_training t_service t_gender log_t_salary tact_teach tact_active tabsent, stats(N r2) cells(b(fmt(3)) se(par s
+> tar fmt(3)))starlevels(* 0.10 ** 0.05 *** .01 ) ;
+
+------------------------------------------------------------------------------------------------------------------------------------
+> --------
+              t_education      t_training       t_service        t_gender    log_t_salary      tact_teach     tact_active         ta
+> bsent   
+                     b/se            b/se            b/se            b/se            b/se            b/se            b/se           
+>  b/se   
+------------------------------------------------------------------------------------------------------------------------------------
+> --------
+lagged_nts          0.502           0.503           0.502           0.502           0.503           0.501           0.501           
+> 0.503   
+                  (0.016)***      (0.016)***      (0.016)***      (0.016)***      (0.016)***      (0.016)***      (0.016)***      (0
+> .016)***
+incentive          -0.113          -0.224           0.258           0.031           1.775           0.118           0.084           
+> 0.150   
+                  (0.163)         (0.176)         (0.059)***      (0.091)         (0.828)**       (0.074)         (0.054)         (0
+> .050)***
+t_education         0.003                                                                                                           
+>         
+                  (0.032)                                                                                                           
+>         
+t_educatio~c        0.086                                                                                                           
+>         
+                  (0.050)*                                                                                                          
+>         
+t_training                         -0.051                                                                                           
+>         
+                                  (0.041)                                                                                           
+>         
+t_training~c                        0.138                                                                                           
+>         
+                                  (0.061)**                                                                                         
+>         
+t_service                                          -0.001                                                                           
+>         
+                                                  (0.003)                                                                           
+>         
+t_service_~c                                       -0.009                                                                           
+>         
+                                                  (0.004)**                                                                         
+>         
+t_gender                                                           -0.084                                                           
+>         
+                                                                  (0.057)                                                           
+>         
+t_gender_i~c                                                        0.090                                                           
+>         
+                                                                  (0.069)                                                           
+>         
+log_t_salary                                                                       -0.034                                           
+>         
+                                                                                  (0.066)                                           
+>         
+log_t_sala~c                                                                       -0.179                                           
+>         
+                                                                                  (0.091)*                                          
+>         
+tact_teach                                                                                          0.131                           
+>         
+                                                                                                  (0.093)                           
+>         
+tact_teach~c                                                                                        0.064                           
+>         
+                                                                                                  (0.111)                           
+>         
+tact_active                                                                                                         0.055           
+>         
+                                                                                                                  (0.078)           
+>         
+tact_activ~c                                                                                                        0.164           
+>         
+                                                                                                                  (0.098)*          
+>         
+tabsent                                                                                                                            -
+> 0.149   
+                                                                                                                                  (0
+> .137)   
+tabsent_in~c                                                                                                                        
+> 0.013   
+                                                                                                                                  (0
+> .171)   
+_cons              -0.037           0.111          -0.012           0.085           0.280          -0.107          -0.052           
+> 0.002   
+                  (0.106)         (0.119)         (0.041)         (0.071)         (0.593)         (0.062)*        (0.044)         (0
+> .040)   
+------------------------------------------------------------------------------------------------------------------------------------
+> --------
+N               53737.000       53890.000       54142.000       54142.000       53122.000       53383.000       53383.000       5360
+> 9.000   
+r2                  0.291           0.290           0.292           0.289           0.292           0.289           0.289           
+> 0.288   
+------------------------------------------------------------------------------------------------------------------------------------
+> --------
+
+. **WITH CTs;
+. foreach var in t_education t_training t_service t_gender log_t_salary tact_teach tact_active tabsent t_deg {;
+  2. disp "`var'";
+  3. areg nts lagged_nts incentive `var' `var'_int_inc if inlist(school_treatment,1,4,5) & cheaters!=1 & teacher_group!=1, absorb(U_
+> MC) cluster(apfschoolcode);
+  4. estimates store `var';
+  5. };
+t_education
+
+Linear regression, absorbing indicators                Number of obs =   58090
+                                                       F(  4,   298) =  291.48
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2855
+                                                       Adj R-squared =  0.2849
+                                                       Root MSE      =  .85464
+
+                        (Std. Err. adjusted for 299 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+         nts |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+  lagged_nts |   .5005382   .0155307    32.23   0.000     .4699744     .531102
+   incentive |   .0968214   .1527582     0.63   0.527    -.2038002    .3974429
+ t_education |   .0299935   .0377059     0.80   0.427    -.0442101     .104197
+t_educatio~c |    .019933   .0483048     0.41   0.680    -.0751287    .1149947
+       _cons |   -.126124   .1168007    -1.08   0.281    -.3559827    .1037348
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+t_training
+
+Linear regression, absorbing indicators                Number of obs =   58165
+                                                       F(  4,   298) =  273.24
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2865
+                                                       Adj R-squared =  0.2859
+                                                       Root MSE      =  .85368
+
+                        (Std. Err. adjusted for 299 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+         nts |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+  lagged_nts |   .5000036   .0154719    32.32   0.000     .4695555    .5304517
+   incentive |  -.0191578   .1307998    -0.15   0.884     -.276566    .2382505
+  t_training |   .0047385   .0380022     0.12   0.901    -.0700482    .0795252
+t_training~c |   .0676707   .0464003     1.46   0.146    -.0236432    .1589846
+       _cons |  -.0461962   .1042562    -0.44   0.658    -.2513678    .1589754
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+t_service
+
+Linear regression, absorbing indicators                Number of obs =   54142
+                                                       F(  4,   298) =  254.66
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2924
+                                                       Adj R-squared =  0.2917
+                                                       Root MSE      =  .85143
+
+                        (Std. Err. adjusted for 299 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+         nts |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+  lagged_nts |   .5021094   .0161886    31.02   0.000     .4702509    .5339679
+   incentive |   .2580504   .0586838     4.40   0.000     .1425632    .3735375
+   t_service |  -.0012572   .0028999    -0.43   0.665    -.0069641    .0044497
+t_service_~c |  -.0088141   .0039149    -2.25   0.025    -.0165183   -.0011098
+       _cons |  -.0119122   .0410591    -0.29   0.772    -.0927148    .0688904
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+t_gender
+
+Linear regression, absorbing indicators                Number of obs =   58529
+                                                       F(  4,   298) =  293.58
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2851
+                                                       Adj R-squared =  0.2844
+                                                       Root MSE      =  .85382
+
+                        (Std. Err. adjusted for 299 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+         nts |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+  lagged_nts |   .5000924   .0154603    32.35   0.000     .4696672    .5305176
+   incentive |   .0243775   .0909346     0.27   0.789    -.1545779    .2033329
+    t_gender |  -.0846823   .0555013    -1.53   0.128    -.1939065    .0245419
+t_gender_i~c |   .0951459   .0661378     1.44   0.151    -.0350104    .2253021
+       _cons |   .0822694   .0734681     1.12   0.264    -.0623127    .2268514
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+log_t_salary
+
+Linear regression, absorbing indicators                Number of obs =   57509
+                                                       F(  4,   298) =  270.93
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2851
+                                                       Adj R-squared =  0.2844
+                                                       Root MSE      =  .85498
+
+                        (Std. Err. adjusted for 299 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+         nts |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+  lagged_nts |   .5007442   .0156452    32.01   0.000     .4699552    .5315332
+   incentive |   .6652188   .4500918     1.48   0.140    -.2205423     1.55098
+log_t_salary |   .0407032   .0426212     0.95   0.340    -.0431735    .1245799
+log_t_sala~c |  -.0576735   .0501447    -1.15   0.251     -.156356     .041009
+       _cons |  -.3945324   .3758908    -1.05   0.295    -1.134269    .3452043
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+tact_teach
+
+Linear regression, absorbing indicators                Number of obs =   76358
+                                                       F(  4,   299) =  355.79
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2783
+                                                       Adj R-squared =  0.2778
+                                                       Root MSE      =  .85742
+
+                        (Std. Err. adjusted for 300 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+         nts |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+  lagged_nts |   .5076772   .0136471    37.20   0.000     .4808207    .5345338
+   incentive |   .1001897    .069663     1.44   0.151    -.0369021    .2372816
+  tact_teach |   .0831075   .0747708     1.11   0.267    -.0640362    .2302513
+tact_teach~c |   .0713358   .0946199     0.75   0.451    -.1148695    .2575411
+       _cons |  -.0904692   .0569105    -1.59   0.113    -.2024651    .0215267
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+tact_active
+
+Linear regression, absorbing indicators                Number of obs =   76358
+                                                       F(  4,   299) =  382.25
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2791
+                                                       Adj R-squared =  0.2786
+                                                       Root MSE      =  .85695
+
+                        (Std. Err. adjusted for 300 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+         nts |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+  lagged_nts |   .5077024   .0136069    37.31   0.000      .480925    .5344798
+   incentive |   .0763508   .0476994     1.60   0.111    -.0175183    .1702199
+ tact_active |   .0439674   .0605928     0.73   0.469     -.075275    .1632098
+tact_activ~c |   .1518352   .0775753     1.96   0.051    -.0008275     .304498
+       _cons |  -.0595898   .0400152    -1.49   0.137    -.1383369    .0191573
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+tabsent
+
+Linear regression, absorbing indicators                Number of obs =   76627
+                                                       F(  4,   299) =  363.45
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2777
+                                                       Adj R-squared =  0.2772
+                                                       Root MSE      =  .85753
+
+                        (Std. Err. adjusted for 300 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+         nts |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+  lagged_nts |   .5084649   .0137014    37.11   0.000     .4815015    .5354283
+   incentive |   .1368075   .0408054     3.35   0.001     .0565053    .2171098
+     tabsent |  -.1167595   .1156893    -1.01   0.314     -.344428    .1109089
+tabsent_in~c |   .0208446   .1468957     0.14   0.887    -.2682358     .309925
+       _cons |  -.0162081   .0292381    -0.55   0.580    -.0737466    .0413304
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+t_deg
+
+Linear regression, absorbing indicators                Number of obs =   58529
+                                                       F(  4,   298) =  273.25
+                                                       Prob > F      =  0.0000
+                                                       R-squared     =  0.2855
+                                                       Adj R-squared =  0.2849
+                                                       Root MSE      =  .85357
+
+                        (Std. Err. adjusted for 299 clusters in apfschoolcode)
+------------------------------------------------------------------------------
+             |               Robust
+         nts |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+  lagged_nts |   .5023136   .0155286    32.35   0.000      .471754    .5328732
+   incentive |  -.0388488   .0901606    -0.43   0.667    -.2162809    .1385834
+       t_deg |  -.0595473   .0420046    -1.42   0.157    -.1422106    .0231159
+t_deg_int_~c |   .1082662   .0499854     2.17   0.031     .0098971    .2066353
+       _cons |   .0727467   .0778697     0.93   0.351    -.0804975    .2259909
+-------------+----------------------------------------------------------------
+        U_MC |   absorbed                                      (50 categories)
+
+. estout t_education t_training t_service t_gender log_t_salary tact_teach tact_active tabsent, stats(N r2) cells(b(fmt(3)) se(par s
+> tar fmt(3)))starlevels(* 0.10 ** 0.05 *** .01 ) ;
+
+------------------------------------------------------------------------------------------------------------------------------------
+> --------
+              t_education      t_training       t_service        t_gender    log_t_salary      tact_teach     tact_active         ta
+> bsent   
+                     b/se            b/se            b/se            b/se            b/se            b/se            b/se           
+>  b/se   
+------------------------------------------------------------------------------------------------------------------------------------
+> --------
+lagged_nts          0.501           0.500           0.502           0.500           0.501           0.508           0.508           
+> 0.508   
+                  (0.016)***      (0.015)***      (0.016)***      (0.015)***      (0.016)***      (0.014)***      (0.014)***      (0
+> .014)***
+incentive           0.097          -0.019           0.258           0.024           0.665           0.100           0.076           
+> 0.137   
+                  (0.153)         (0.131)         (0.059)***      (0.091)         (0.450)         (0.070)         (0.048)         (0
+> .041)***
+t_education         0.030                                                                                                           
+>         
+                  (0.038)                                                                                                           
+>         
+t_educatio~c        0.020                                                                                                           
+>         
+                  (0.048)                                                                                                           
+>         
+t_training                          0.005                                                                                           
+>         
+                                  (0.038)                                                                                           
+>         
+t_training~c                        0.068                                                                                           
+>         
+                                  (0.046)                                                                                           
+>         
+t_service                                          -0.001                                                                           
+>         
+                                                  (0.003)                                                                           
+>         
+t_service_~c                                       -0.009                                                                           
+>         
+                                                  (0.004)**                                                                         
+>         
+t_gender                                                           -0.085                                                           
+>         
+                                                                  (0.056)                                                           
+>         
+t_gender_i~c                                                        0.095                                                           
+>         
+                                                                  (0.066)                                                           
+>         
+log_t_salary                                                                        0.041                                           
+>         
+                                                                                  (0.043)                                           
+>         
+log_t_sala~c                                                                       -0.058                                           
+>         
+                                                                                  (0.050)                                           
+>         
+tact_teach                                                                                          0.083                           
+>         
+                                                                                                  (0.075)                           
+>         
+tact_teach~c                                                                                        0.071                           
+>         
+                                                                                                  (0.095)                           
+>         
+tact_active                                                                                                         0.044           
+>         
+                                                                                                                  (0.061)           
+>         
+tact_activ~c                                                                                                        0.152           
+>         
+                                                                                                                  (0.078)*          
+>         
+tabsent                                                                                                                            -
+> 0.117   
+                                                                                                                                  (0
+> .116)   
+tabsent_in~c                                                                                                                        
+> 0.021   
+                                                                                                                                  (0
+> .147)   
+_cons              -0.126          -0.046          -0.012           0.082          -0.395          -0.090          -0.060          -
+> 0.016   
+                  (0.117)         (0.104)         (0.041)         (0.073)         (0.376)         (0.057)         (0.040)         (0
+> .029)   
+------------------------------------------------------------------------------------------------------------------------------------
+> --------
+N               58090.000       58165.000       54142.000       58529.000       57509.000       76358.000       76358.000       7662
+> 7.000   
+r2                  0.286           0.287           0.292           0.285           0.285           0.278           0.279           
+> 0.278   
+------------------------------------------------------------------------------------------------------------------------------------
+> --------
+
+. log close;
+      name:  <unnamed>
+       log:  c:\JPE\stata\\logs\\Incentives_JPE_table5B.txt
+  log type:  text
+ closed on:   8 Feb 2011, 13:25:28
+------------------------------------------------------------------------------------------------------------------------------------
