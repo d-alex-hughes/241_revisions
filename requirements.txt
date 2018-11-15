@@ -1,6 +1,0 @@
-R CMD install data.table 
-R CMD install sandwich 
-R CMD install lmtest
-R CMD install AER 
-R CMD install stargazer
-R CMD install dplyr  
